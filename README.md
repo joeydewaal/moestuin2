@@ -14,10 +14,18 @@ cd server && MOESTUIN_MOCK_HW=1 cargo run
 cd web && pnpm install && pnpm dev
 ```
 
-## Deploy (Pi)
+## Deploy (Pi, Docker Compose)
 
 ```bash
-./deploy/install.sh
+cp deploy/moestuin.env.example deploy/moestuin.env
+# edit deploy/moestuin.env, set MOESTUIN_SITE, OIDC creds, allowed emails
+docker compose up -d --build
 ```
 
-Edit `/etc/moestuin/moestuin.env` afterwards, then `sudo systemctl restart moestuin`.
+Nightly backup (host cron):
+
+```cron
+15 3 * * *  cd /srv/moestuin && docker compose run --rm backup
+```
+
+Adjust `group_add` in `docker-compose.yml` to match the host's `gpio` and `i2c` GIDs (`getent group gpio i2c`).

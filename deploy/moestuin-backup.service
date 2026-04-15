@@ -1,8 +1,0 @@
-[Unit]
-Description=Moestuin nightly backup + webcam rollup
-
-[Service]
-Type=oneshot
-User=moestuin
-Group=moestuin
-ExecStart=/usr/local/bin/moestuin-backup.sh

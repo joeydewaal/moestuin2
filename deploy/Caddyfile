@@ -1,20 +1,17 @@
-moestuin.local {
+{$MOESTUIN_SITE:moestuin.local} {
 	encode zstd gzip
 
-	handle_path /api/* {
-		reverse_proxy localhost:8080
+	@api path /api/* /auth/*
+	handle @api {
+		reverse_proxy server:8080
 	}
-	handle_path /auth/* {
-		reverse_proxy localhost:8080
-	}
+
 	handle_path /webcam/* {
-		root * /var/lib/moestuin/webcam
+		root * /data/webcam
 		file_server browse
 	}
 
 	handle {
-		root * /var/lib/moestuin/web
-		try_files {path} /index.html
-		file_server
+		reverse_proxy web:3000
 	}
 }

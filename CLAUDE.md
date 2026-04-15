@@ -24,7 +24,7 @@ A garden/allotment tracker self-hosted on a Raspberry Pi. Family-only website sh
                                               pumps)         segments)
 ```
 
-Everything runs on one Raspberry Pi. Reverse-proxy (Caddy or nginx) terminates TLS and serves the built frontend + proxies `/api` to Axum.
+Everything runs on one Raspberry Pi, orchestrated by **Docker Compose**. Caddy (in a container) terminates TLS, proxies `/api` + `/auth` to the `server` container, and the rest to the `web` container. Sensors/pumps are accessed by mapping `/dev/gpiomem` and `/dev/i2c-1` into the server container; the webcam container mounts `/dev/video0`.
 
 ## Tech stack
 
@@ -71,7 +71,8 @@ moestuin/
 │   ├── migrations/
 │   └── tests/             # insta snapshots live here
 ├── hardware/              # sensor/pump/webcam daemons (may live inside server/)
-├── deploy/                # systemd units, Caddyfile, install scripts
+├── deploy/                # Caddyfile, webcam + backup container contexts, env example
+├── docker-compose.yml
 └── .github/workflows/
 ```
 
@@ -98,9 +99,11 @@ The backend mocks GPIO/sensors/webcam on non-Linux or when `MOESTUIN_MOCK_HW=1`.
 
 ## Deployment
 
-- `deploy/install.sh` builds release binary, copies systemd units, enables `moestuin.service` and `moestuin-webcam.service`.
-- Webcam archive lives in `/var/lib/moestuin/webcam/YYYY-MM-DD/`.
-- SQLite DB at `/var/lib/moestuin/moestuin.db`; nightly `sqlite3 .backup` to `/var/lib/moestuin/backups/`.
+- **Docker Compose** is the only supported deploy path (`docker-compose.yml`). Services: `server`, `web`, `webcam`, `caddy`, and a one-shot `backup` container (profile `tools`).
+- Persistent state lives in the `moestuin-data` named volume, mounted at `/data` inside containers: SQLite at `/data/moestuin.db`, webcam archive at `/data/webcam/YYYY-MM-DD/`, photos at `/data/photos/`, backups at `/data/backups/`.
+- Hardware access: `server` maps `/dev/gpiomem` + `/dev/i2c-1`; `webcam` maps `/dev/video0`. Host's `gpio` and `i2c` GIDs go into `group_add` — verify with `getent group gpio i2c`.
+- Backups are triggered by host cron: `docker compose run --rm backup`.
+- Secrets in `deploy/moestuin.env` (gitignored), loaded via compose `env_file`.
 
 ## Skills
 

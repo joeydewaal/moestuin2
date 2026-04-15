@@ -71,11 +71,14 @@ This means dev laptops, CI, and a Pi with a disconnected sensor all keep running
 
 ## Deploy
 
-- `deploy/install.sh` copies the release binary to `/usr/local/bin/moestuin`, installs systemd units:
-  - `moestuin.service` — the Axum server.
-  - `moestuin-webcam.service` — the ffmpeg capture loop.
-  - `moestuin-backup.timer` — nightly SQLite backup + webcam rollup.
-- Grant the service user membership of `gpio`, `i2c`, `video` groups; don't run as root.
+- Everything runs via **Docker Compose** (`docker-compose.yml` at repo root). Services:
+  - `server` — Axum binary. Maps `/dev/gpiomem` + `/dev/i2c-1`, adds host `gpio` + `i2c` GIDs via `group_add`.
+  - `web` — built SvelteKit app served by `adapter-node`.
+  - `webcam` — ffmpeg loop, maps `/dev/video0`, writes to the shared volume.
+  - `caddy` — TLS + reverse proxy on :80/:443.
+  - `backup` — one-shot (profile `tools`), invoked nightly from host cron: `docker compose run --rm backup`.
+- State lives in the `moestuin-data` volume mounted at `/data` (DB, webcam, photos, backups).
+- Don't run containers as root; each Dockerfile creates a non-root user. Use `group_add` rather than `privileged: true`.
 
 ## Don't
 

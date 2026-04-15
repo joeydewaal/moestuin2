@@ -2,8 +2,9 @@
 # ffmpeg capture loop. Writes HLS segments into today's dated directory.
 set -euo pipefail
 
-ROOT=/var/lib/moestuin/webcam
+ROOT=${WEBCAM_ROOT:-/data/webcam}
 DEVICE=${MOESTUIN_VIDEO_DEVICE:-/dev/video0}
+mkdir -p "$ROOT"
 
 while true; do
 	DAY="$(date +%Y-%m-%d)"
