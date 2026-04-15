@@ -1,11 +1,11 @@
-#![allow(dead_code)]
-
 use axum::{
     Json,
     http::StatusCode,
     response::{IntoResponse, Response},
 };
 use serde::Serialize;
+
+pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
 
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
@@ -16,7 +16,25 @@ pub enum AppError {
     #[error("bad request: {0}")]
     BadRequest(String),
     #[error(transparent)]
-    Internal(#[from] anyhow::Error),
+    Internal(#[from] BoxError),
+}
+
+impl AppError {
+    pub fn internal(msg: impl Into<String>) -> Self {
+        Self::Internal(msg.into().into())
+    }
+}
+
+impl From<std::io::Error> for AppError {
+    fn from(e: std::io::Error) -> Self {
+        Self::Internal(Box::new(e))
+    }
+}
+
+impl From<std::net::AddrParseError> for AppError {
+    fn from(e: std::net::AddrParseError) -> Self {
+        Self::Internal(Box::new(e))
+    }
 }
 
 #[derive(Serialize)]
