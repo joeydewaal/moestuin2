@@ -1,6 +1,6 @@
 use std::{error::Error, net::SocketAddr};
 
-use server::{build_app, config::Config};
+use server::{build_app, config::Config, open_db};
 use tracing_subscriber::{EnvFilter, fmt};
 
 #[tokio::main]
@@ -12,7 +12,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         .init();
 
     let cfg = Config::from_env()?;
-    let app = build_app(&cfg).await?;
+    let db = open_db(&cfg).await?;
+    let app = build_app(&cfg, db).await?;
 
     let addr: SocketAddr = cfg.bind.parse()?;
     tracing::info!(%addr, "moestuin listening");

@@ -2,7 +2,7 @@
 
 use std::net::SocketAddr;
 
-use server::{build_app, config::Config};
+use server::{build_app, config::Config, open_db};
 
 struct TestServer {
     addr: SocketAddr,
@@ -26,7 +26,8 @@ impl TestServer {
             },
         };
 
-        let app = build_app(&cfg).await.expect("build app");
+        let db = open_db(&cfg).await.expect("open db");
+        let app = build_app(&cfg, db).await.expect("build app");
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0")
             .await
             .expect("bind");

@@ -9,14 +9,15 @@ use axum::{
 };
 
 use axum_security::{
-    cookie::{CookieContext, CookieSession, MemStore, SameSite},
+    cookie::{CookieContext, CookieSession, SameSite},
     oidc::{AfterLoginCookies, LogoutContext, OidcContext, OidcHandler, OidcTokenResponse},
 };
 use jiff::Timestamp;
 use serde::{Deserialize, Serialize};
+use toasty::Db;
 use uuid::Uuid;
 
-use crate::config::Config;
+use crate::{config::Config, session_store::ToastySessionStore};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct User {
@@ -29,7 +30,7 @@ pub struct User {
 
 pub type Sessions = CookieContext<User>;
 
-pub fn cookie_service(cfg: &Config) -> Sessions {
+pub fn cookie_service(cfg: &Config, db: Db) -> Sessions {
     CookieContext::builder()
         .cookie(|c| {
             c.name("moestuin_session")
@@ -47,7 +48,7 @@ pub fn cookie_service(cfg: &Config) -> Sessions {
                 .same_site(SameSite::Lax)
         })
         .use_dev_cookie(cfg.mock_auth || cfg!(debug_assertions))
-        .store(MemStore::new())
+        .store(ToastySessionStore::new(db))
         .expires_max_age()
         .build::<User>()
 }

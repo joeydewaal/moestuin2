@@ -1,18 +1,33 @@
 use axum::{Json, Router, routing::get};
 use axum_security::{cookie::CookieSession, oidc::OidcExt};
 use serde_json::json;
+use toasty::Db;
 use tower_http::{compression::CompressionLayer, trace::TraceLayer};
 
 pub mod auth;
 pub mod config;
 pub mod error;
+pub mod session_store;
 
 use auth::User;
 use config::Config;
-use error::AppResult;
+use error::{AppError, AppResult};
+use session_store::Session;
 
-pub async fn build_app(cfg: &Config) -> AppResult<Router> {
-    let sessions = auth::cookie_service(cfg);
+pub async fn open_db(cfg: &Config) -> AppResult<Db> {
+    let db = Db::builder()
+        .models(toasty::models!(Session))
+        .connect(&cfg.database_url)
+        .await
+        .map_err(|e| AppError::internal(format!("open db: {e}")))?;
+    db.push_schema()
+        .await
+        .map_err(|e| AppError::internal(format!("push schema: {e}")))?;
+    Ok(db)
+}
+
+pub async fn build_app(cfg: &Config, db: Db) -> AppResult<Router> {
+    let sessions = auth::cookie_service(cfg, db);
 
     let mut app = Router::new()
         .route("/health", get(health))
