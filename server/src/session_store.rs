@@ -31,10 +31,6 @@ impl ToastySessionStore {
     }
 }
 
-fn db_err(e: toasty::Error) -> AppError {
-    AppError::internal(e.to_string())
-}
-
 impl CookieStore for ToastySessionStore {
     type State = User;
     type Error = AppError;
@@ -43,11 +39,7 @@ impl CookieStore for ToastySessionStore {
         let mut db = self.db.clone();
         let id = session.session_id.as_str().to_string();
 
-        Session::filter_by_id(&id)
-            .delete()
-            .exec(&mut db)
-            .await
-            .map_err(db_err)?;
+        Session::filter_by_id(&id).delete().exec(&mut db).await?;
 
         Session::create()
             .id(id)
@@ -58,34 +50,34 @@ impl CookieStore for ToastySessionStore {
             .name(session.state.name)
             .user_created_at(session.state.created_at.as_second())
             .exec(&mut db)
-            .await
-            .map_err(db_err)?;
+            .await?;
 
         Ok(())
     }
 
     async fn load_session(&self, id: &SessionId) -> AppResult<Option<CookieSession<User>>> {
         let mut db = self.db.clone();
-        match Session::get_by_id(&mut db, id.as_str().to_string()).await {
-            Ok(row) => {
-                let user = User {
-                    id: Uuid::parse_str(&row.user_id)
-                        .map_err(|e| AppError::internal(format!("bad user_id: {e}")))?,
-                    subject: row.subject,
-                    email: row.email,
-                    name: row.name,
-                    created_at: Timestamp::from_second(row.user_created_at)
-                        .map_err(|e| AppError::internal(format!("bad timestamp: {e}")))?,
-                };
-                Ok(Some(CookieSession::new(
-                    id.clone(),
-                    row.session_created_at as u64,
-                    user,
-                )))
-            }
-            Err(e) if e.is_record_not_found() => Ok(None),
-            Err(e) => Err(db_err(e)),
-        }
+        let Some(row) = Session::filter_by_id(id.as_str().to_string())
+            .first()
+            .exec(&mut db)
+            .await?
+        else {
+            return Ok(None);
+        };
+        let user = User {
+            id: Uuid::parse_str(&row.user_id)
+                .map_err(|e| AppError::internal(format!("bad user_id: {e}")))?,
+            subject: row.subject,
+            email: row.email,
+            name: row.name,
+            created_at: Timestamp::from_second(row.user_created_at)
+                .map_err(|e| AppError::internal(format!("bad timestamp: {e}")))?,
+        };
+        Ok(Some(CookieSession::new(
+            id.clone(),
+            row.session_created_at as u64,
+            user,
+        )))
     }
 
     async fn remove_session(&self, id: &SessionId) -> AppResult<Option<CookieSession<User>>> {
@@ -95,8 +87,7 @@ impl CookieStore for ToastySessionStore {
             Session::filter_by_id(id.as_str().to_string())
                 .delete()
                 .exec(&mut db)
-                .await
-                .map_err(db_err)?;
+                .await?;
         }
         Ok(existing)
     }
@@ -107,8 +98,7 @@ impl CookieStore for ToastySessionStore {
         toasty::query!(Session filter .session_created_at <= #cutoff)
             .delete()
             .exec(&mut db)
-            .await
-            .map_err(db_err)?;
+            .await?;
         Ok(())
     }
 }

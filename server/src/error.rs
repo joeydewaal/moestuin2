@@ -23,6 +23,16 @@ impl AppError {
     }
 }
 
+impl From<toasty::Error> for AppError {
+    fn from(e: toasty::Error) -> Self {
+        if e.is_record_not_found() {
+            Self::NotFound
+        } else {
+            Self::Internal(e.to_string())
+        }
+    }
+}
+
 #[derive(Serialize)]
 struct ErrorBody<'a> {
     code: &'a str,
