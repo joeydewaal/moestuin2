@@ -1,0 +1,76 @@
+services:
+  server:
+    build:
+      context: ./server
+    image: moestuin/server:latest
+    restart: unless-stopped
+    env_file:
+      - path: ./deploy/moestuin.env
+        required: false
+    environment:
+      MOESTUIN_BIND: 0.0.0.0:8080
+      MOESTUIN_DATABASE_URL: sqlite:/data/moestuin.db
+    volumes:
+      - moestuin-data:/data
+    devices:
+      - /dev/gpiomem:/dev/gpiomem
+      - /dev/i2c-1:/dev/i2c-1
+    group_add:
+      - "997" # gpio (adjust to host's gpio GID)
+      - "998" # i2c  (adjust to host's i2c GID)
+    expose:
+      - "8080"
+
+  web:
+    build:
+      context: ./web
+    image: moestuin/web:latest
+    restart: unless-stopped
+    expose:
+      - "3000"
+
+  webcam:
+    build:
+      context: ./deploy/webcam
+    image: moestuin/webcam:latest
+    restart: unless-stopped
+    devices:
+      - /dev/video0:/dev/video0
+    volumes:
+      - moestuin-data:/data
+    environment:
+      WEBCAM_ROOT: /data/webcam
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - moestuin-data:/data:ro
+      - caddy-data:/data/caddy
+      - caddy-config:/config
+    environment:
+      MOESTUIN_SITE: ${MOESTUIN_SITE:-moestuin.local}
+    depends_on:
+      - server
+      - web
+
+  # One-shot: `docker compose run --rm backup` (call nightly from host cron).
+  backup:
+    build:
+      context: ./deploy/backup
+    image: moestuin/backup:latest
+    profiles: ["tools"]
+    volumes:
+      - moestuin-data:/data
+    environment:
+      MOESTUIN_STATE: /data
+      WEBCAM_RETAIN_DAYS: "30"
+
+volumes:
+  moestuin-data:
+  caddy-data:
+  caddy-config:

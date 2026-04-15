@@ -6,7 +6,7 @@ Milestones are ordered so the site is usable end-to-end as early as possible, th
 - [ ] Init `server/` (`cargo new`), add Tokio, Axum, Toasty, tower-http, axum-security, tracing, serde, chrono, insta.
 - [ ] Init `web/` (`pnpm create svelte`), add TanStack Query, Skeleton UI, Playwright, Vitest, PWA plugin.
 - [ ] GitHub Actions: `fmt`, `lint`, `test` workflows for both projects.
-- [ ] `deploy/` skeleton: Caddyfile, systemd unit templates.
+- [ ] `deploy/` skeleton: Caddyfile + per-service Dockerfiles; root `docker-compose.yml` wiring server, web, webcam, caddy, and a one-shot backup container.
 - [ ] CLAUDE.md, README, pre-commit hooks (`cargo fmt`, `prettier`).
 
 ## M1 — Auth
@@ -62,7 +62,7 @@ Milestones are ordered so the site is usable end-to-end as early as possible, th
 - [ ] Response compression enabled and verified (gzip + br).
 - [ ] Rate limiting on auth routes.
 - [ ] Nightly SQLite backup + webcam archive pruning.
-- [ ] Healthcheck endpoint + systemd watchdog.
+- [ ] Healthcheck endpoint + Docker `HEALTHCHECK` directives on every service.
 - [ ] Structured logs shipped to a local file, rotated via logrotate.
 - [ ] Document restore procedure in `deploy/README.md`.
 

@@ -2,10 +2,11 @@
 # Nightly: SQLite backup, yesterday's webcam rollup, retention prune.
 set -euo pipefail
 
-STATE=/var/lib/moestuin
+STATE=${MOESTUIN_STATE:-/data}
 DB="$STATE/moestuin.db"
 BACKUPS="$STATE/backups"
 WEBCAM="$STATE/webcam"
+mkdir -p "$BACKUPS"
 RETAIN_DAYS=${WEBCAM_RETAIN_DAYS:-30}
 
 STAMP="$(date +%Y-%m-%dT%H%M%S)"
