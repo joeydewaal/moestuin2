@@ -1,0 +1,22 @@
+[Unit]
+Description=Moestuin server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=moestuin
+Group=moestuin
+SupplementaryGroups=gpio i2c video
+EnvironmentFile=/etc/moestuin/moestuin.env
+WorkingDirectory=/var/lib/moestuin
+ExecStart=/usr/local/bin/moestuin
+Restart=on-failure
+RestartSec=5
+WatchdogSec=60
+NoNewPrivileges=true
+ProtectSystem=full
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target
