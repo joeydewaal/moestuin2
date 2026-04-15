@@ -10,13 +10,15 @@ Milestones are ordered so the site is usable end-to-end as early as possible, th
 - [ ] CLAUDE.md, README, pre-commit hooks (`cargo fmt`, `prettier`).
 
 ## M1 — Auth
-- [ ] Google OIDC on the backend, with email allowlist from `config.toml`.
-- [ ] Session cookies (HttpOnly, Secure, SameSite=Lax), CSRF token on POST routes.
-- [ ] `/auth/login`, `/auth/callback`, `/auth/logout`, `/auth/me`.
-- [ ] Auth middleware gates every `/api/*` endpoint.
-- [ ] Frontend: Google sign-in screen, `useSession` query, redirect logic.
-- [ ] Playwright test: unauthenticated user is bounced to login.
-- [ ] insta snapshot of `/auth/me` response.
+- [x] Google OIDC on the backend via `axum-security`, with email allowlist from env (`MOESTUIN_ALLOWED_EMAILS`). Unverified / non-allow-listed emails redirect to `/login?error=…`.
+- [x] Session cookies (HttpOnly, `SameSite=Lax`, `Secure` in prod, `Path=/`).
+- [x] `/auth/login`, `/auth/callback`, `/auth/logout`, `/auth/me`, plus dev-only `/auth/dev-login` behind `MOESTUIN_MOCK_AUTH`.
+- [x] Auth-gated routes use the `CookieSession<User>` extractor (stub `/api/ping` demonstrates it).
+- [x] Frontend: Google sign-in page, `sessionQuery` via TanStack Query, `<AuthGuard>` redirect-on-401.
+- [x] Playwright test: unauthenticated `/` redirects to `/login`; login button links to `/auth/login`.
+- [x] insta snapshot of `/auth/me` response (uuid redacted).
+- [ ] CSRF token on POST routes (add when the first mutating endpoint lands).
+- [ ] Persistent session store — currently `MemStore`; swap for a SQLite-backed store when we add migrations in M2.
 
 ## M2 — Sensors + live graph
 - [ ] Sensor daemon task (`tokio::spawn`) polls DHT22 + moisture every 30s, writes to `readings` table.

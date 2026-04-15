@@ -1,8 +1,16 @@
 import { defineConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
 
+const backend = process.env.MOESTUIN_BACKEND ?? 'http://localhost:8080';
+
 export default defineConfig({
 	plugins: [sveltekit()],
+	server: {
+		proxy: {
+			'/api': { target: backend, changeOrigin: false },
+			'/auth': { target: backend, changeOrigin: false }
+		}
+	},
 	test: {
 		expect: { requireAssertions: true },
 		projects: [
