@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# Fail fast on format issues. Install via: git config core.hooksPath .githooks
+set -euo pipefail
+
+ROOT="$(git rev-parse --show-toplevel)"
+
+if git diff --cached --name-only | grep -q '^server/.*\.rs$'; then
+	echo "==> cargo fmt --check"
+	(cd "$ROOT/server" && cargo fmt --all -- --check)
+fi
+
+if git diff --cached --name-only | grep -qE '^web/.*\.(ts|svelte|js|json|css|md)$'; then
+	echo "==> prettier --check (web)"
+	(cd "$ROOT/web" && pnpm exec prettier --check .)
+fi
