@@ -5,8 +5,6 @@ use axum::{
 };
 use serde::Serialize;
 
-pub type BoxError = Box<dyn std::error::Error + Send + Sync>;
-
 #[derive(Debug, thiserror::Error)]
 pub enum AppError {
     #[error("unauthorized")]
@@ -15,25 +13,13 @@ pub enum AppError {
     NotFound,
     #[error("bad request: {0}")]
     BadRequest(String),
-    #[error(transparent)]
-    Internal(#[from] BoxError),
+    #[error("{0}")]
+    Internal(String),
 }
 
 impl AppError {
     pub fn internal(msg: impl Into<String>) -> Self {
-        Self::Internal(msg.into().into())
-    }
-}
-
-impl From<std::io::Error> for AppError {
-    fn from(e: std::io::Error) -> Self {
-        Self::Internal(Box::new(e))
-    }
-}
-
-impl From<std::net::AddrParseError> for AppError {
-    fn from(e: std::net::AddrParseError) -> Self {
-        Self::Internal(Box::new(e))
+        Self::Internal(msg.into())
     }
 }
 
@@ -58,8 +44,8 @@ impl IntoResponse for AppError {
             ),
             AppError::NotFound => (StatusCode::NOT_FOUND, "NOT_FOUND", "not found".to_string()),
             AppError::BadRequest(m) => (StatusCode::BAD_REQUEST, "BAD_REQUEST", m.clone()),
-            AppError::Internal(e) => {
-                tracing::error!(error = ?e, "internal error");
+            AppError::Internal(m) => {
+                tracing::error!(error = %m, "internal error");
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "INTERNAL",

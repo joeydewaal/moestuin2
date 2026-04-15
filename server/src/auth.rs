@@ -106,7 +106,7 @@ impl OidcHandler for AllowlistHandler {
 pub async fn build_oidc(
     cfg: &Config,
     sessions: Sessions,
-) -> anyhow::Result<OidcContext<AllowlistHandler>> {
+) -> crate::error::AppResult<OidcContext<AllowlistHandler>> {
     let handler = AllowlistHandler {
         sessions,
         allowed: cfg.allowed_emails.clone(),
@@ -114,7 +114,7 @@ pub async fn build_oidc(
 
     Ok(OidcContext::google()
         .await
-        .map_err(|e| anyhow::anyhow!("google discovery failed: {e}"))?
+        .map_err(|e| crate::error::AppError::internal(format!("google discovery failed: {e}")))?
         .client_id(cfg.oidc.client_id.clone())
         .client_secret(cfg.oidc.client_secret.clone())
         .redirect_url(cfg.oidc.redirect_url.clone())

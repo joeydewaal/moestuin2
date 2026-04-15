@@ -1,10 +1,10 @@
-use std::net::SocketAddr;
+use std::{error::Error, net::SocketAddr};
 
 use server::{build_app, config::Config};
 use tracing_subscriber::{EnvFilter, fmt};
 
 #[tokio::main]
-async fn main() -> anyhow::Result<()> {
+async fn main() -> Result<(), Box<dyn Error>> {
     let _ = dotenvy::dotenv();
 
     fmt()

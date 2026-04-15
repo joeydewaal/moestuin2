@@ -9,8 +9,9 @@ pub mod error;
 
 use auth::User;
 use config::Config;
+use error::AppResult;
 
-pub async fn build_app(cfg: &Config) -> anyhow::Result<Router> {
+pub async fn build_app(cfg: &Config) -> AppResult<Router> {
     let sessions = auth::cookie_service(cfg);
 
     let mut app = Router::new()

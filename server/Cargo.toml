@@ -4,7 +4,6 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-anyhow = "1.0.102"
 axum = "0.8.9"
 axum-extra = { version = "0.12.6", features = ["cookie", "cookie-signed"] }
 axum-security = { git = "https://github.com/joeydewaal/axum-security.git", version = "0.0.1", features = ["cookie", "jwt", "oauth2", "jiff", "oidc"] }

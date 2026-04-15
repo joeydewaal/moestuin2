@@ -1,5 +1,7 @@
 use std::env;
 
+use crate::error::{AppError, AppResult};
+
 #[derive(Debug, Clone)]
 #[allow(dead_code)] // fields wired up across later milestones (M2+)
 pub struct Config {
@@ -22,7 +24,7 @@ pub struct OidcConfig {
 }
 
 impl Config {
-    pub fn from_env() -> anyhow::Result<Self> {
+    pub fn from_env() -> AppResult<Self> {
         let mock_auth = env::var("MOESTUIN_MOCK_AUTH").ok().as_deref() == Some("1");
 
         let cookie_secret = match env::var("MOESTUIN_COOKIE_SECRET") {
@@ -30,7 +32,11 @@ impl Config {
             Err(_) if mock_auth || cfg!(debug_assertions) => {
                 b"dev-cookie-secret-do-not-use-in-prod-32".to_vec()
             }
-            Err(e) => return Err(anyhow::anyhow!("MOESTUIN_COOKIE_SECRET missing: {e}")),
+            Err(e) => {
+                return Err(AppError::internal(format!(
+                    "MOESTUIN_COOKIE_SECRET missing: {e}"
+                )));
+            }
         };
 
         Ok(Self {
