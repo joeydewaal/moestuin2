@@ -14,6 +14,7 @@ Invoke this skill when working in `server/`.
 - **axum-security** supplies session middleware; cookies are `HttpOnly`, `Secure`, `SameSite=Lax`.
 - **tower-http** `CompressionLayer::new()` (gzip + br) wraps the router.
 - **tracing** + `tracing-subscriber` with JSON output in release, pretty in debug.
+- **jiff** for timestamps and durations — no `chrono`, no `time`.
 
 ## Router shape
 
@@ -52,7 +53,7 @@ Sensor polling task publishes to a `tokio::sync::broadcast` channel; handlers su
 
 ## Hardware fallback
 
-All hardware access goes through a trait (`SensorDriver`, `PumpDriver`, `Webcam`). Select real vs. mock impl at startup based on `MOESTUIN_MOCK_HW` env var so dev + CI work off-Pi.
+All hardware access goes through an **enum** per device class (`SensorDriver`, `PumpDriver`, `Webcam`), each with `Real` and `Mock` variants — not a `dyn Trait`. At startup, try to open the real device; if construction fails (or `MOESTUIN_MOCK_HW=1`) log a warning and fall back to `Mock` automatically. Expose which variant is active via the health endpoint. See the `pi-hardware` skill for the full pattern.
 
 ## Testing
 

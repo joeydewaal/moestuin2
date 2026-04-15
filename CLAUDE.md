@@ -39,6 +39,7 @@ Everything runs on one Raspberry Pi. Reverse-proxy (Caddy or nginx) terminates T
 
 ### Backend (`/server`)
 - **Rust** edition 2024, **Tokio**, **Axum**.
+- **jiff** for all date/time handling.
 - **Toasty** as the ORM over **SQLite**.
 - **axum-security** for middleware, cookie-based sessions (HttpOnly, Secure, SameSite=Lax).
 - **OIDC** (Google) with a hard-coded allowlist of family emails in config.
@@ -80,7 +81,7 @@ moestuin/
 - **Database migrations** are checked-in SQL under `server/migrations/`, applied on startup.
 - **API shape**: JSON, `camelCase` on the wire (serde rename_all).
 - **Errors**: backend returns `{ "error": { "code": "...", "message": "..." } }`; frontend surfaces via a Skeleton toast.
-- **Time** is stored UTC (`chrono::DateTime<Utc>`), rendered in Europe/Amsterdam on the client.
+- **Time** is stored UTC using `jiff` (`jiff::Timestamp`), rendered in Europe/Amsterdam on the client. Do not use `chrono` or `time`.
 - **Logging**: `tracing` on the backend, structured JSON in production.
 
 ## Running locally

@@ -15,22 +15,38 @@ Invoke when working on sensor daemons, pump drivers, webcam capture, or deploy s
 - **12V water pumps** driven through a relay board on GPIO (active-low, check your board).
 - **USB webcam** at `/dev/video0`.
 
-## Driver trait pattern
+## Driver enum pattern
 
-All hardware is behind a trait so CI and dev laptops work:
+Each hardware class is a single enum with `Real` and `Mock` variants — no trait objects, no `Box<dyn>`. Dispatch is a plain `match`:
 
 ```rust
-#[async_trait]
-pub trait SensorDriver: Send + Sync {
-    async fn read(&self) -> Result<Reading>;
+pub enum SensorDriver {
+    Real(RealSensor),
+    Mock(MockSensor),
+}
+
+impl SensorDriver {
+    pub async fn read(&self) -> Result<Reading> {
+        match self {
+            Self::Real(s) => s.read().await,
+            Self::Mock(s) => s.read().await,
+        }
+    }
 }
 ```
 
-Implementations:
-- `RealSensor` — uses `rppal` for GPIO/I²C. Compile-gated with `#[cfg(target_os = "linux")]` + feature flag.
-- `MockSensor` — deterministic sine-wave values, used when `MOESTUIN_MOCK_HW=1`.
+Same shape for `PumpDriver` and `Webcam`.
 
-Factory picks at startup; the rest of the app is oblivious.
+**Selection at startup** (probe-then-fallback):
+
+1. If `MOESTUIN_MOCK_HW=1` → force `Mock`.
+2. Else try to construct `Real` (open GPIO/I²C/`/dev/video0`). On success → `Real`.
+3. On failure → log a `tracing::warn!` with the reason and fall back to `Mock`.
+
+This means dev laptops, CI, and a Pi with a disconnected sensor all keep running; the health endpoint reports which variant is active per device so you can tell at a glance.
+
+- `RealSensor` uses `rppal` for GPIO/I²C, compile-gated with `#[cfg(target_os = "linux")]`.
+- `MockSensor` produces deterministic sine-wave values seeded from the wall clock so graphs look alive.
 
 ## Pumps — safety first
 
