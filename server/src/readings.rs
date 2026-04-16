@@ -60,16 +60,18 @@ async fn list(
     let to = q.to.unwrap_or(Timestamp::MAX);
     let limit = q.limit.unwrap_or(500).min(5000) as usize;
 
-    let rows: Vec<Reading> = toasty::query!(Reading filter .taken_at >= #from and .taken_at <= #to)
+    let out = Reading::all()
+        .filter(
+            Reading::fields()
+                .taken_at()
+                .ge(from)
+                .and(Reading::fields().taken_at().le(to)),
+        )
+        .order_by(Reading::fields().taken_at().asc())
+        .limit(limit)
         .exec(&mut db)
         .await?;
 
-    let mut out = rows;
-    out.sort_by_key(|r| r.taken_at);
-    if out.len() > limit {
-        let start = out.len() - limit;
-        out.drain(..start);
-    }
     Ok(Json(out))
 }
 

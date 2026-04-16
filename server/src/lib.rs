@@ -24,7 +24,7 @@ pub const POLL_INTERVAL: Duration = Duration::from_secs(30);
 
 pub async fn open_db(cfg: &Config) -> AppResult<Db> {
     let db = Db::builder()
-        .models(toasty::models!(Session, Reading))
+        .models(toasty::models!(Session, Reading, User))
         .connect(&cfg.database_url)
         .await
         .map_err(|e| AppError::internal(format!("open db: {e}")))?;
@@ -41,7 +41,7 @@ pub async fn build_app(cfg: &Config, db: Db) -> AppResult<Router> {
     let (tx, _rx) = broadcast::channel::<Reading>(64);
     sensors::spawn_poller(db.clone(), driver, tx.clone(), POLL_INTERVAL);
 
-    let readings_state = ReadingsState { db, tx };
+    let readings_state = ReadingsState { db: db.clone(), tx };
 
     let mut app = Router::new()
         .route("/api/ping", get(ping))
@@ -50,9 +50,9 @@ pub async fn build_app(cfg: &Config, db: Db) -> AppResult<Router> {
 
     if cfg.mock_auth {
         tracing::warn!("MOESTUIN_MOCK_AUTH enabled — /auth/dev-login is live, DO NOT use in prod");
-        app = app.merge(auth::dev_routes(cfg, sessions.clone()));
+        app = app.merge(auth::dev_routes(cfg, db.clone(), sessions.clone()));
     } else {
-        let oidc = auth::build_oidc(cfg, sessions.clone()).await?;
+        let oidc = auth::build_oidc(cfg, db, sessions.clone()).await?;
         app = app.with_oidc(oidc);
     }
 

@@ -17,10 +17,11 @@ use serde::{Deserialize, Serialize};
 use toasty::Db;
 use uuid::Uuid;
 
-use crate::{config::Config, session_store::ToastySessionStore};
+use crate::{config::Config, error::AppError, session_store::ToastySessionStore};
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone, toasty::Model, Serialize, Deserialize)]
 pub struct User {
+    #[key]
     pub id: Uuid,
     pub subject: String,
     pub email: String,
@@ -54,6 +55,7 @@ pub fn cookie_service(cfg: &Config, db: Db) -> Sessions {
 }
 
 pub struct AllowlistHandler {
+    db: Db,
     sessions: Sessions,
     allowed: Vec<String>,
 }
@@ -79,12 +81,15 @@ impl OidcHandler for AllowlistHandler {
             return Redirect::to("/login?error=forbidden").into_response();
         }
 
-        let user = User {
-            id: Uuid::now_v7(),
-            subject: token_res.claims.subject.to_string(),
-            email,
-            name: token_res.claims.name.map(ToString::to_string),
-            created_at: Timestamp::now(),
+        let subject = token_res.claims.subject.to_string();
+        let name = token_res.claims.name.map(ToString::to_string);
+
+        let user = match upsert_user(&self.db, subject, email, name).await {
+            Ok(u) => u,
+            Err(e) => {
+                tracing::error!(?e, "failed to upsert user");
+                return (StatusCode::INTERNAL_SERVER_ERROR, "user error").into_response();
+            }
         };
 
         match self.sessions.create_session(user).await {
@@ -104,11 +109,60 @@ impl OidcHandler for AllowlistHandler {
     }
 }
 
+async fn upsert_user(
+    db: &Db,
+    subject: String,
+    email: String,
+    name: Option<String>,
+) -> Result<User, AppError> {
+    let mut db = db.clone();
+
+    if let Some(existing) = User::all()
+        .filter(User::fields().subject().eq(&subject))
+        .first()
+        .exec(&mut db)
+        .await?
+    {
+        User::all()
+            .filter(User::fields().subject().eq(&subject))
+            .update()
+            .email(&email)
+            .name(name.clone())
+            .exec(&mut db)
+            .await?;
+
+        Ok(User {
+            email,
+            name,
+            ..existing
+        })
+    } else {
+        let user = User {
+            id: Uuid::now_v7(),
+            subject,
+            email,
+            name,
+            created_at: Timestamp::now(),
+        };
+        User::create()
+            .id(user.id)
+            .subject(&user.subject)
+            .email(&user.email)
+            .name(user.name.clone())
+            .created_at(user.created_at)
+            .exec(&mut db)
+            .await?;
+        Ok(user)
+    }
+}
+
 pub async fn build_oidc(
     cfg: &Config,
+    db: Db,
     sessions: Sessions,
 ) -> crate::error::AppResult<OidcContext<AllowlistHandler>> {
     let handler = AllowlistHandler {
+        db,
         sessions,
         allowed: cfg.allowed_emails.clone(),
     };
@@ -158,13 +212,15 @@ async fn dev_login(State(state): State<DevLoginState>, Query(q): Query<DevLoginQ
     {
         return (StatusCode::FORBIDDEN, "email not on allowlist").into_response();
     }
-    let user = User {
-        id: Uuid::now_v7(),
-        subject: format!("dev:{}", q.email),
-        email: q.email,
-        name: q.name,
-        created_at: Timestamp::now(),
+
+    let user = match upsert_user(&state.db, format!("dev:{}", q.email), q.email, q.name).await {
+        Ok(u) => u,
+        Err(e) => {
+            tracing::error!(?e, "dev upsert error");
+            return (StatusCode::INTERNAL_SERVER_ERROR, "user error").into_response();
+        }
     };
+
     match state.sessions.create_session(user).await {
         Ok(cookie) => (cookie, Redirect::to("/")).into_response(),
         Err(e) => {
@@ -176,14 +232,16 @@ async fn dev_login(State(state): State<DevLoginState>, Query(q): Query<DevLoginQ
 
 #[derive(Clone)]
 struct DevLoginState {
+    db: Db,
     sessions: Sessions,
     allowed: Arc<Vec<String>>,
 }
 
-pub fn dev_routes(cfg: &Config, sessions: Sessions) -> Router {
+pub fn dev_routes(cfg: &Config, db: Db, sessions: Sessions) -> Router {
     Router::new()
         .route("/auth/dev-login", get(dev_login))
         .with_state(DevLoginState {
+            db,
             sessions,
             allowed: Arc::new(cfg.allowed_emails.clone()),
         })
