@@ -31,10 +31,10 @@ export interface Reading {
 
 export const api = {
 	me: () => request<Me>('/auth/me'),
-	readings: (params?: { from?: number; to?: number; limit?: number }) => {
+	readings: (params?: { from?: string; to?: string; limit?: number }) => {
 		const q = new URLSearchParams();
-		if (params?.from !== undefined) q.set('from', String(params.from));
-		if (params?.to !== undefined) q.set('to', String(params.to));
+		if (params?.from !== undefined) q.set('from', params.from);
+		if (params?.to !== undefined) q.set('to', params.to);
 		if (params?.limit !== undefined) q.set('limit', String(params.limit));
 		const qs = q.toString();
 		return request<Reading[]>(`/api/readings${qs ? `?${qs}` : ''}`);

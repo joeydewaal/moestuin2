@@ -23,12 +23,6 @@ impl AppError {
     }
 }
 
-impl From<jiff::Error> for AppError {
-    fn from(e: jiff::Error) -> Self {
-        Self::BadRequest(e.to_string())
-    }
-}
-
 impl From<toasty::Error> for AppError {
     fn from(e: toasty::Error) -> Self {
         if e.is_record_not_found() {

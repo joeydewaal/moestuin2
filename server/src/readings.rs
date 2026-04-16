@@ -52,8 +52,8 @@ pub fn routes(state: ReadingsState) -> Router {
 
 #[derive(Debug, Deserialize)]
 pub struct ListQuery {
-    pub from: Option<i64>,
-    pub to: Option<i64>,
+    pub from: Option<Timestamp>,
+    pub to: Option<Timestamp>,
     pub limit: Option<u32>,
 }
 
@@ -63,15 +63,8 @@ async fn list(
     Query(q): Query<ListQuery>,
 ) -> AppResult<Json<Vec<Reading>>> {
     let mut db = state.db.clone();
-    let from = q
-        .from
-        .map(Timestamp::from_second)
-        .transpose()?
-        .unwrap_or(Timestamp::UNIX_EPOCH);
-    let to =
-        q.to.map(Timestamp::from_second)
-            .transpose()?
-            .unwrap_or(Timestamp::MAX);
+    let from = q.from.unwrap_or(Timestamp::UNIX_EPOCH);
+    let to = q.to.unwrap_or(Timestamp::MAX);
     let limit = q.limit.unwrap_or(500).min(5000) as usize;
 
     let rows: Vec<Reading> = toasty::query!(Reading filter .taken_at >= #from and .taken_at <= #to)
