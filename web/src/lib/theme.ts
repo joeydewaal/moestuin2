@@ -1,7 +1,7 @@
 import { browser } from '$app/environment';
 
 export type Theme = 'light' | 'dark';
-const STORAGE_KEY = 'moestuin-theme';
+const STORAGE_KEY = 'moestuin:theme';
 
 export function initTheme(): Theme {
 	if (!browser) return 'light';
@@ -14,7 +14,6 @@ export function initTheme(): Theme {
 
 export function applyTheme(theme: Theme) {
 	if (!browser) return;
-	document.documentElement.dataset.mode = theme;
 	document.documentElement.classList.toggle('dark', theme === 'dark');
 	localStorage.setItem(STORAGE_KEY, theme);
 }

@@ -33,8 +33,8 @@ test('dashboard renders graph and live SSE updates latest value', async ({ page 
 
 	await page.goto('/');
 	await expect(page.getByTestId('sensor-graph-temp_c')).toBeVisible();
-	await expect(page.getByTestId('latest-temp_c')).toHaveText('22.50°C');
-	await expect(page.getByTestId('latest-humidity')).toHaveText('65.00%');
+	await expect(page.getByTestId('latest-temp_c')).toHaveText('22.5°C');
+	await expect(page.getByTestId('latest-humidity')).toHaveText('65.0%');
 });
 
 test('theme toggle persists to localStorage', async ({ page }) => {
@@ -55,6 +55,6 @@ test('theme toggle persists to localStorage', async ({ page }) => {
 	const toggle = page.getByTestId('theme-toggle');
 	await expect(toggle).toBeVisible();
 	await toggle.click();
-	const stored = await page.evaluate(() => localStorage.getItem('moestuin-theme'));
+	const stored = await page.evaluate(() => localStorage.getItem('moestuin:theme'));
 	expect(stored === 'dark' || stored === 'light').toBe(true);
 });

@@ -23,50 +23,82 @@
 </script>
 
 <AuthGuard>
-	<main class="mx-auto max-w-4xl p-6">
-		<header class="flex items-center justify-between">
-			<div>
-				<h1 class="text-2xl font-semibold">Moestuin</h1>
-				{#if session.data}
-					<p class="text-sm opacity-80" data-testid="whoami">
-						Signed in as {session.data.email}
-					</p>
-				{/if}
+	<div class="min-h-screen bg-surface-50 dark:bg-surface-950">
+		<!-- Top bar -->
+		<header
+			class="border-b border-surface-200-700 bg-surface-50/80 dark:bg-surface-950/80 backdrop-blur-sm sticky top-0 z-10"
+		>
+			<div class="mx-auto max-w-5xl px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+				<div class="flex items-center gap-2">
+					<span class="text-xl" aria-hidden="true">🌱</span>
+					<span class="font-semibold text-surface-900 dark:text-surface-50">Moestuin</span>
+				</div>
+				<div class="flex items-center gap-3">
+					{#if session.data}
+						<span
+							class="hidden sm:block text-sm text-surface-500-400 truncate max-w-48"
+							data-testid="whoami"
+						>
+							{session.data.email}
+						</span>
+					{/if}
+					<ThemeToggle bind:theme />
+					<form method="get" action="/auth/logout">
+						<button class="btn preset-tonal-surface text-sm py-1.5 px-3 rounded-md" type="submit">
+							Sign out
+						</button>
+					</form>
+				</div>
 			</div>
-			<ThemeToggle bind:theme />
 		</header>
 
-		<section class="mt-6 space-y-4" data-testid="dashboard">
-			{#if readings.isLoading}
-				<div data-testid="readings-loading"><Spinner /></div>
-			{:else if readings.isError}
-				<p class="text-error-500">Failed to load readings</p>
-			{:else if readings.data}
-				<SensorGraph
-					readings={readings.data}
-					field="temp_c"
-					label="Temperature"
-					color="#ef4444"
-					unit="°C"
-				/>
-				<SensorGraph
-					readings={readings.data}
-					field="humidity"
-					label="Humidity"
-					color="#3b82f6"
-					unit="%"
-				/>
-				<SensorGraph
-					readings={readings.data}
-					field="moisture"
-					label="Soil moisture"
-					color="#10b981"
-				/>
-			{/if}
-		</section>
+		<!-- Main content -->
+		<main class="mx-auto max-w-5xl px-4 sm:px-6 py-8">
+			<div class="mb-6">
+				<h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-50">Dashboard</h1>
+				<p class="text-sm text-surface-500-400 mt-1">Live sensor readings from the allotment</p>
+			</div>
 
-		<form method="get" action="/auth/logout" class="mt-8">
-			<button class="btn preset-tonal" type="submit">Sign out</button>
-		</form>
-	</main>
+			<section data-testid="dashboard">
+				{#if readings.isLoading}
+					<div data-testid="readings-loading">
+						<Spinner />
+					</div>
+				{:else if readings.isError}
+					<div class="card preset-tonal-error p-4 text-sm">
+						Failed to load readings. <button class="underline" onclick={() => readings.refetch()}
+							>Retry</button
+						>
+					</div>
+				{:else if readings.data}
+					<div class="grid gap-4 sm:grid-cols-3">
+						<SensorGraph
+							readings={readings.data}
+							field="temp_c"
+							label="Temperature"
+							color="oklch(62% 0.2 25)"
+							unit="°C"
+							icon="🌡️"
+						/>
+						<SensorGraph
+							readings={readings.data}
+							field="humidity"
+							label="Humidity"
+							color="oklch(60% 0.15 240)"
+							unit="%"
+							icon="💧"
+						/>
+						<SensorGraph
+							readings={readings.data}
+							field="moisture"
+							label="Soil moisture"
+							color="oklch(55% 0.13 145)"
+							unit=""
+							icon="🌱"
+						/>
+					</div>
+				{/if}
+			</section>
+		</main>
+	</div>
 </AuthGuard>
