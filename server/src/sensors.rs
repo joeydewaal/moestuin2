@@ -94,23 +94,23 @@ async fn tick(
     let id = Uuid::now_v7();
 
     let mut db = db.clone();
-    Reading::create()
-        .id(id)
-        .taken_at(taken_at)
-        .temp_c_centi(to_centi(sample.temp_c))
-        .humidity_centi(to_centi(sample.humidity))
-        .moisture_centi(to_centi(sample.moisture))
-        .exec(&mut db)
-        .await
-        .map_err(AppError::from)?;
-
     let reading = Reading {
         id,
         taken_at,
-        temp_c_centi: to_centi(sample.temp_c),
-        humidity_centi: to_centi(sample.humidity),
-        moisture_centi: to_centi(sample.moisture),
+        temp_c: to_centi(sample.temp_c),
+        humidity: to_centi(sample.humidity),
+        moisture: to_centi(sample.moisture),
     };
+
+    Reading::create()
+        .id(id)
+        .taken_at(taken_at)
+        .temp_c(reading.temp_c)
+        .humidity(reading.humidity)
+        .moisture(reading.moisture)
+        .exec(&mut db)
+        .await
+        .map_err(AppError::from)?;
     let _ = tx.send(reading);
     Ok(())
 }

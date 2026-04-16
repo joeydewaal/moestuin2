@@ -18,7 +18,6 @@ use auth::User;
 use config::Config;
 use error::{AppError, AppResult};
 use readings::{Reading, ReadingsState};
-use sensors::DriverKind;
 use session_store::Session;
 
 pub const POLL_INTERVAL: Duration = Duration::from_secs(30);
@@ -35,29 +34,18 @@ pub async fn open_db(cfg: &Config) -> AppResult<Db> {
     Ok(db)
 }
 
-#[derive(Clone)]
-pub struct Health {
-    pub driver: DriverKind,
-}
-
 pub async fn build_app(cfg: &Config, db: Db) -> AppResult<Router> {
     let sessions = auth::cookie_service(cfg, db.clone());
 
     let driver = sensors::probe(cfg.mock_hardware).await;
-    let driver_kind = driver.kind();
     let (tx, _rx) = broadcast::channel::<Reading>(64);
     sensors::spawn_poller(db.clone(), driver, tx.clone(), POLL_INTERVAL);
 
     let readings_state = ReadingsState { db, tx };
-    let health = Health {
-        driver: driver_kind,
-    };
 
     let mut app = Router::new()
-        .route("/health", get(health_handler))
         .route("/api/ping", get(ping))
         .route("/auth/me", get(auth::me))
-        .with_state(health)
         .merge(readings::routes(readings_state));
 
     if cfg.mock_auth {
@@ -72,12 +60,6 @@ pub async fn build_app(cfg: &Config, db: Db) -> AppResult<Router> {
         .layer(sessions)
         .layer(CompressionLayer::new().br(true).gzip(true))
         .layer(TraceLayer::new_for_http()))
-}
-
-async fn health_handler(
-    axum::extract::State(h): axum::extract::State<Health>,
-) -> Json<serde_json::Value> {
-    Json(json!({ "status": "ok", "driver": h.driver }))
 }
 
 async fn ping(session: CookieSession<User>) -> Json<serde_json::Value> {

@@ -29,12 +29,12 @@ pub struct Reading {
     #[key]
     pub id: Uuid,
     pub taken_at: Timestamp,
-    #[serde(rename = "temp_c", serialize_with = "serialize_from_centi")]
-    pub temp_c_centi: i64,
-    #[serde(rename = "humidity", serialize_with = "serialize_from_centi")]
-    pub humidity_centi: i64,
-    #[serde(rename = "moisture", serialize_with = "serialize_from_centi")]
-    pub moisture_centi: i64,
+    #[serde(serialize_with = "serialize_from_centi")]
+    pub temp_c: i64,
+    #[serde(serialize_with = "serialize_from_centi")]
+    pub humidity: i64,
+    #[serde(serialize_with = "serialize_from_centi")]
+    pub moisture: i64,
 }
 
 #[derive(Clone)]
