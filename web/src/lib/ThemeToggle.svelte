@@ -13,7 +13,7 @@
 	type="button"
 	class="btn preset-tonal-surface hover:preset-filled-surface-200-800 rounded-full p-2 transition-colors"
 	data-testid="theme-toggle"
-	aria-label="Toggle theme"
+	aria-label="Thema wisselen"
 	onclick={toggle}
 >
 	{#if theme === 'dark'}

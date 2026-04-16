@@ -13,7 +13,7 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
-	<title>Moestuin</title>
+	<title>Mijn Moestuin</title>
 </svelte:head>
 
 <QueryClientProvider {client}>

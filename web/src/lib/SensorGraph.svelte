@@ -41,14 +41,17 @@
 				</p>
 			</div>
 			{#if trend}
-				<span class="mt-1 text-lg" aria-label="trend {trend}">
+				<span
+					class="mt-1 text-lg"
+					aria-label={trend === 'up' ? 'stijgend' : trend === 'down' ? 'dalend' : 'gelijk'}
+				>
 					{trend === 'up' ? '↑' : trend === 'down' ? '↓' : '→'}
 				</span>
 			{/if}
 		</div>
 
 		{#if readings.length === 0}
-			<p class="mt-4 py-6 text-center text-sm text-surface-400">No data yet</p>
+			<p class="mt-4 py-6 text-center text-sm text-surface-400">Nog geen metingen</p>
 		{:else}
 			<div class="mt-3 h-32">
 				<LineChart

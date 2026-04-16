@@ -105,6 +105,11 @@ The backend mocks GPIO/sensors/webcam on non-Linux or when `MOESTUIN_MOCK_HW=1`.
 - Backups are triggered by host cron: `docker compose run --rm backup`.
 - Secrets in `deploy/moestuin.env` (gitignored), loaded via compose `env_file`.
 
+## Language
+
+- All **UI text** (labels, buttons, headings, error messages, placeholders, page titles) must be in **Dutch**.
+- All **code, variable names, comments, commit messages, and documentation** must be in **English**.
+
 ## Skills
 
 Project-specific skills in `.claude/skills/`:

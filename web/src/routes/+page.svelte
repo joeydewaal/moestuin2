@@ -31,7 +31,7 @@
 			<div class="mx-auto max-w-5xl px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
 				<div class="flex items-center gap-2">
 					<span class="text-xl" aria-hidden="true">🌱</span>
-					<span class="font-semibold text-surface-900 dark:text-surface-50">Moestuin</span>
+					<span class="font-semibold text-surface-900 dark:text-surface-50">Mijn Moestuin</span>
 				</div>
 				<div class="flex items-center gap-3">
 					{#if session.data}
@@ -45,7 +45,7 @@
 					<ThemeToggle bind:theme />
 					<form method="get" action="/auth/logout">
 						<button class="btn preset-tonal-surface text-sm py-1.5 px-3 rounded-md" type="submit">
-							Sign out
+							Uitloggen
 						</button>
 					</form>
 				</div>
@@ -56,7 +56,7 @@
 		<main class="mx-auto max-w-5xl px-4 sm:px-6 py-8">
 			<div class="mb-6">
 				<h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-50">Dashboard</h1>
-				<p class="text-sm text-surface-500-400 mt-1">Live sensor readings from the allotment</p>
+				<p class="text-sm text-surface-500-400 mt-1">Live sensormetingen van de moestuin</p>
 			</div>
 
 			<section data-testid="dashboard">
@@ -66,8 +66,9 @@
 					</div>
 				{:else if readings.isError}
 					<div class="card preset-tonal-error p-4 text-sm">
-						Failed to load readings. <button class="underline" onclick={() => readings.refetch()}
-							>Retry</button
+						Metingen konden niet worden geladen. <button
+							class="underline"
+							onclick={() => readings.refetch()}>Opnieuw proberen</button
 						>
 					</div>
 				{:else if readings.data}
@@ -75,7 +76,7 @@
 						<SensorGraph
 							readings={readings.data}
 							field="temp_c"
-							label="Temperature"
+							label="Temperatuur"
 							color="oklch(62% 0.2 25)"
 							unit="°C"
 							icon="🌡️"
@@ -83,7 +84,7 @@
 						<SensorGraph
 							readings={readings.data}
 							field="humidity"
-							label="Humidity"
+							label="Luchtvochtigheid"
 							color="oklch(60% 0.15 240)"
 							unit="%"
 							icon="💧"
@@ -91,7 +92,7 @@
 						<SensorGraph
 							readings={readings.data}
 							field="moisture"
-							label="Soil moisture"
+							label="Bodemvochtigheid"
 							color="oklch(55% 0.13 145)"
 							unit=""
 							icon="🌱"

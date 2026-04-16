@@ -2,17 +2,24 @@
 	import { page } from '$app/state';
 
 	const errorMessages: Record<string, string> = {
-		no_email: 'Your Google account did not return an email address.',
-		unverified: 'Your Google email address is not verified.',
-		forbidden: 'That email is not on the allowlist.'
+		no_email: 'Je Google-account heeft geen e-mailadres teruggegeven.',
+		unverified: 'Je Google-e-mailadres is niet geverifieerd.',
+		forbidden: 'Dit e-mailadres staat niet op de toegestane lijst.'
 	};
 
 	const err = $derived(page.url.searchParams.get('error'));
-	const errMsg = $derived(err ? (errorMessages[err] ?? 'Sign-in failed.') : null);
+	const errMsg = $derived(err ? (errorMessages[err] ?? 'Inloggen mislukt.') : null);
+
+	let devEmail = $state('');
+
+	function devLogin() {
+		const params = new URLSearchParams({ email: devEmail });
+		window.location.href = `/auth/dev-login?${params}`;
+	}
 </script>
 
 <svelte:head>
-	<title>Sign in — Moestuin</title>
+	<title>Inloggen — Mijn Moestuin</title>
 </svelte:head>
 
 <div class="min-h-screen bg-surface-50 dark:bg-surface-950 flex items-center justify-center p-4">
@@ -23,8 +30,8 @@
 			>
 				<span class="text-3xl" aria-hidden="true">🌱</span>
 			</div>
-			<h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-50">Moestuin</h1>
-			<p class="mt-1 text-sm text-surface-500-400">Family allotment tracker</p>
+			<h1 class="text-2xl font-semibold text-surface-900 dark:text-surface-50">Mijn Moestuin</h1>
+			<p class="mt-1 text-sm text-surface-500-400">Familietuin tracker</p>
 		</div>
 
 		<div class="card preset-filled-surface-100-800 shadow-md p-6 space-y-4">
@@ -35,7 +42,7 @@
 			{/if}
 
 			<p class="text-sm text-surface-600-300 text-center">
-				Sign in with your family Google account to continue.
+				Log in met je familie Google-account om verder te gaan.
 			</p>
 
 			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- backend route -->
@@ -68,8 +75,35 @@
 						d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
 					/>
 				</svg>
-				Sign in with Google
+				Inloggen met Google
 			</a>
+
+			{#if import.meta.env.DEV}
+				<hr class="border-surface-200-700" />
+				<div class="space-y-2">
+					<p class="text-xs text-surface-400 text-center uppercase tracking-wider">
+						Ontwikkelomgeving
+					</p>
+					<div class="flex gap-2">
+						<input
+							type="email"
+							placeholder="e-mailadres"
+							bind:value={devEmail}
+							class="input flex-1 text-sm"
+							data-testid="dev-email"
+						/>
+						<button
+							type="button"
+							class="btn preset-tonal-surface text-sm px-3"
+							onclick={devLogin}
+							disabled={!devEmail}
+							data-testid="dev-login"
+						>
+							Inloggen
+						</button>
+					</div>
+				</div>
+			{/if}
 		</div>
 	</div>
 </div>

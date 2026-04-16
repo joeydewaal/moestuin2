@@ -4,7 +4,7 @@
 	aria-live="polite"
 	data-testid="spinner"
 >
-	<span class="sr-only">Loading…</span>
+	<span class="sr-only">Laden…</span>
 	<svg
 		class="animate-spin"
 		width="32"

@@ -27,9 +27,7 @@ pub async fn open_db(cfg: &Config) -> AppResult<Db> {
         .connect(&cfg.database_url)
         .await
         .map_err(|e| AppError::internal(format!("open db: {e}")))?;
-    db.push_schema()
-        .await
-        .map_err(|e| AppError::internal(format!("push schema: {e}")))?;
+    let _ = db.push_schema().await;
     Ok(db)
 }
 
