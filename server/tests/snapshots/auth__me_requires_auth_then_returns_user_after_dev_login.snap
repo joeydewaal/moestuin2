@@ -1,0 +1,9 @@
+---
+source: tests/auth.rs
+expression: body
+---
+{
+  "email": "family@example.com",
+  "id": "[uuid]",
+  "name": "Family"
+}

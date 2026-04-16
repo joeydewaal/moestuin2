@@ -13,8 +13,24 @@ pub enum AppError {
     NotFound,
     #[error("bad request: {0}")]
     BadRequest(String),
-    #[error(transparent)]
-    Internal(#[from] anyhow::Error),
+    #[error("{0}")]
+    Internal(String),
+}
+
+impl AppError {
+    pub fn internal(msg: impl Into<String>) -> Self {
+        Self::Internal(msg.into())
+    }
+}
+
+impl From<toasty::Error> for AppError {
+    fn from(e: toasty::Error) -> Self {
+        if e.is_record_not_found() {
+            Self::NotFound
+        } else {
+            Self::Internal(e.to_string())
+        }
+    }
 }
 
 #[derive(Serialize)]
@@ -38,8 +54,8 @@ impl IntoResponse for AppError {
             ),
             AppError::NotFound => (StatusCode::NOT_FOUND, "NOT_FOUND", "not found".to_string()),
             AppError::BadRequest(m) => (StatusCode::BAD_REQUEST, "BAD_REQUEST", m.clone()),
-            AppError::Internal(e) => {
-                tracing::error!(error = ?e, "internal error");
+            AppError::Internal(m) => {
+                tracing::error!(error = %m, "internal error");
                 (
                     StatusCode::INTERNAL_SERVER_ERROR,
                     "INTERNAL",
