@@ -17,7 +17,7 @@ pub mod session_store;
 use auth::User;
 use config::Config;
 use error::{AppError, AppResult};
-use readings::{Reading, ReadingJson, ReadingsState};
+use readings::{Reading, ReadingsState};
 use sensors::DriverKind;
 use session_store::Session;
 
@@ -45,7 +45,7 @@ pub async fn build_app(cfg: &Config, db: Db) -> AppResult<Router> {
 
     let driver = sensors::probe(cfg.mock_hardware).await;
     let driver_kind = driver.kind();
-    let (tx, _rx) = broadcast::channel::<ReadingJson>(64);
+    let (tx, _rx) = broadcast::channel::<Reading>(64);
     sensors::spawn_poller(db.clone(), driver, tx.clone(), POLL_INTERVAL);
 
     let readings_state = ReadingsState { db, tx };

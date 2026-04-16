@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     error::{AppError, AppResult},
-    readings::{Reading, ReadingJson},
+    readings::Reading,
 };
 
 #[derive(Debug, Clone, Copy, serde::Serialize)]
@@ -68,7 +68,7 @@ pub async fn probe(mock_hw: bool) -> SensorDriver {
 pub fn spawn_poller(
     db: Db,
     mut driver: SensorDriver,
-    tx: broadcast::Sender<ReadingJson>,
+    tx: broadcast::Sender<Reading>,
     interval: Duration,
 ) {
     tokio::spawn(async move {
@@ -87,16 +87,16 @@ pub fn spawn_poller(
 async fn tick(
     db: &Db,
     driver: &mut SensorDriver,
-    tx: &broadcast::Sender<ReadingJson>,
+    tx: &broadcast::Sender<Reading>,
 ) -> AppResult<()> {
     let sample = driver.read().await?;
     let taken_at = Timestamp::now();
-    let id = Uuid::now_v7().to_string();
+    let id = Uuid::now_v7();
 
     let mut db = db.clone();
     Reading::create()
-        .id(id.clone())
-        .taken_at(taken_at.as_second())
+        .id(id)
+        .taken_at(taken_at)
         .temp_c_centi(to_centi(sample.temp_c))
         .humidity_centi(to_centi(sample.humidity))
         .moisture_centi(to_centi(sample.moisture))
@@ -104,21 +104,17 @@ async fn tick(
         .await
         .map_err(AppError::from)?;
 
-    let json = ReadingJson {
+    let reading = Reading {
         id,
         taken_at,
-        temp_c: sample.temp_c,
-        humidity: sample.humidity,
-        moisture: sample.moisture,
+        temp_c_centi: to_centi(sample.temp_c),
+        humidity_centi: to_centi(sample.humidity),
+        moisture_centi: to_centi(sample.moisture),
     };
-    let _ = tx.send(json);
+    let _ = tx.send(reading);
     Ok(())
 }
 
 pub fn to_centi(v: f64) -> i64 {
     (v * 100.0).round() as i64
-}
-
-pub fn from_centi(v: i64) -> f64 {
-    v as f64 / 100.0
 }

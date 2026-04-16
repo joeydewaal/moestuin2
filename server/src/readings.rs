@@ -16,44 +16,31 @@ use serde::{Deserialize, Serialize};
 use toasty::Db;
 use tokio::sync::broadcast;
 use tokio_stream::wrappers::BroadcastStream;
+use uuid::Uuid;
 
-use crate::{auth::User, error::AppResult, sensors::from_centi};
+use crate::{auth::User, error::AppResult};
 
-#[derive(Debug, toasty::Model)]
+fn serialize_from_centi<S: serde::Serializer>(v: &i64, s: S) -> Result<S::Ok, S::Error> {
+    s.serialize_f64(*v as f64 / 100.0)
+}
+
+#[derive(Debug, Clone, toasty::Model, Serialize)]
 pub struct Reading {
     #[key]
-    pub id: String,
-    pub taken_at: i64,
-    pub temp_c_centi: i64,
-    pub humidity_centi: i64,
-    pub moisture_centi: i64,
-}
-
-#[derive(Debug, Clone, Serialize)]
-pub struct ReadingJson {
-    pub id: String,
+    pub id: Uuid,
     pub taken_at: Timestamp,
-    pub temp_c: f64,
-    pub humidity: f64,
-    pub moisture: f64,
-}
-
-impl From<Reading> for ReadingJson {
-    fn from(r: Reading) -> Self {
-        Self {
-            id: r.id,
-            taken_at: Timestamp::from_second(r.taken_at).unwrap_or_else(|_| Timestamp::now()),
-            temp_c: from_centi(r.temp_c_centi),
-            humidity: from_centi(r.humidity_centi),
-            moisture: from_centi(r.moisture_centi),
-        }
-    }
+    #[serde(rename = "temp_c", serialize_with = "serialize_from_centi")]
+    pub temp_c_centi: i64,
+    #[serde(rename = "humidity", serialize_with = "serialize_from_centi")]
+    pub humidity_centi: i64,
+    #[serde(rename = "moisture", serialize_with = "serialize_from_centi")]
+    pub moisture_centi: i64,
 }
 
 #[derive(Clone)]
 pub struct ReadingsState {
     pub db: Db,
-    pub tx: broadcast::Sender<ReadingJson>,
+    pub tx: broadcast::Sender<Reading>,
 }
 
 pub fn routes(state: ReadingsState) -> Router {
@@ -74,17 +61,24 @@ async fn list(
     _session: CookieSession<User>,
     State(state): State<ReadingsState>,
     Query(q): Query<ListQuery>,
-) -> AppResult<Json<Vec<ReadingJson>>> {
+) -> AppResult<Json<Vec<Reading>>> {
     let mut db = state.db.clone();
-    let from = q.from.unwrap_or(0);
-    let to = q.to.unwrap_or(i64::MAX);
+    let from = q
+        .from
+        .map(Timestamp::from_second)
+        .transpose()?
+        .unwrap_or(Timestamp::UNIX_EPOCH);
+    let to =
+        q.to.map(Timestamp::from_second)
+            .transpose()?
+            .unwrap_or(Timestamp::MAX);
     let limit = q.limit.unwrap_or(500).min(5000) as usize;
 
     let rows: Vec<Reading> = toasty::query!(Reading filter .taken_at >= #from and .taken_at <= #to)
         .exec(&mut db)
         .await?;
 
-    let mut out: Vec<ReadingJson> = rows.into_iter().map(Into::into).collect();
+    let mut out = rows;
     out.sort_by_key(|r| r.taken_at);
     if out.len() > limit {
         let start = out.len() - limit;
