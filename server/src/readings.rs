@@ -20,21 +20,14 @@ use uuid::Uuid;
 
 use crate::{auth::User, error::AppResult};
 
-fn serialize_from_centi<S: serde::Serializer>(v: &i64, s: S) -> Result<S::Ok, S::Error> {
-    s.serialize_f64(*v as f64 / 100.0)
-}
-
 #[derive(Debug, Clone, toasty::Model, Serialize)]
 pub struct Reading {
     #[key]
     pub id: Uuid,
     pub taken_at: Timestamp,
-    #[serde(serialize_with = "serialize_from_centi")]
-    pub temp_c: i64,
-    #[serde(serialize_with = "serialize_from_centi")]
-    pub humidity: i64,
-    #[serde(serialize_with = "serialize_from_centi")]
-    pub moisture: i64,
+    pub temp_c: f64,
+    pub humidity: f64,
+    pub moisture: f64,
 }
 
 #[derive(Clone)]

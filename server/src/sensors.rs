@@ -97,9 +97,9 @@ async fn tick(
     let reading = Reading {
         id,
         taken_at,
-        temp_c: to_centi(sample.temp_c),
-        humidity: to_centi(sample.humidity),
-        moisture: to_centi(sample.moisture),
+        temp_c: sample.temp_c,
+        humidity: sample.humidity,
+        moisture: sample.moisture,
     };
 
     Reading::create()

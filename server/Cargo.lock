@@ -3380,8 +3380,7 @@ dependencies = [
 [[package]]
 name = "toasty"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc77cbee8c7502039b47dd877c4acd8c1fedd4381e99379d0d72e6a21ed035bf"
+source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
 dependencies = [
  "async-trait",
  "bit-set",
@@ -3408,8 +3407,7 @@ dependencies = [
 [[package]]
 name = "toasty-core"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ff7b7064c138f10f25cd50a7faca915e6071b7e19ee46f4f43c2f93f2a9d0c3f"
+source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
 dependencies = [
  "async-trait",
  "bit-set",
@@ -3424,8 +3422,7 @@ dependencies = [
 [[package]]
 name = "toasty-driver-mysql"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c5a77ab1fe9161e201119f1ad4928dcfcaa98e56f4c6cd41bdbcfd907c797e5c"
+source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
 dependencies = [
  "async-trait",
  "jiff",
@@ -3441,8 +3438,7 @@ dependencies = [
 [[package]]
 name = "toasty-driver-postgresql"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "866826c9ac62fa5729f8b28c97b3309515ae73ff2ad291c821d546bf24d715c0"
+source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
 dependencies = [
  "async-trait",
  "const-oid 0.9.6",
@@ -3469,8 +3465,7 @@ dependencies = [
 [[package]]
 name = "toasty-driver-sqlite"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8c1fce87202e58d73a0b1535bddcd33ea9b8c24729beac22c25e77d72a90579b"
+source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
 dependencies = [
  "async-trait",
  "rusqlite",
@@ -3486,8 +3481,7 @@ dependencies = [
 [[package]]
 name = "toasty-macros"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "10845df339b1302d781970805ae76be9e63acb7f8c2ba5675125b05b7774e7c5"
+source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
 dependencies = [
  "heck",
  "pluralizer",
@@ -3500,8 +3494,7 @@ dependencies = [
 [[package]]
 name = "toasty-sql"
 version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5d78bdf83d5654c9c0c4397daa16d1620325294af42b8e798714e4cbef45ee24"
+source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
 dependencies = [
  "toasty-core",
 ]
