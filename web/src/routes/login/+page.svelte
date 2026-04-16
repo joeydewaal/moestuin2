@@ -38,7 +38,7 @@
 				Log in met je familie Google-account om verder te gaan.
 			</p>
 
-			<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- backend route -->
+			<!-- eslint-disable svelte/no-navigation-without-resolve -- backend route, not a SvelteKit page -->
 			<a
 				href="/auth/login"
 				class="btn preset-filled w-full justify-center gap-2 py-2.5"
