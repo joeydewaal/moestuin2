@@ -1,44 +1,55 @@
+use std::time::Duration;
+
 use axum::{Json, Router, routing::get};
 use axum_security::{cookie::CookieSession, oidc::OidcExt};
 use serde_json::json;
 use toasty::Db;
+use tokio::sync::broadcast;
 use tower_http::{compression::CompressionLayer, trace::TraceLayer};
 
 pub mod auth;
 pub mod config;
 pub mod error;
+pub mod readings;
+pub mod sensors;
 pub mod session_store;
 
 use auth::User;
 use config::Config;
 use error::{AppError, AppResult};
-use session_store::Session;
+use readings::{Reading, ReadingsState};
+
+pub const POLL_INTERVAL: Duration = Duration::from_secs(30);
 
 pub async fn open_db(cfg: &Config) -> AppResult<Db> {
     let db = Db::builder()
-        .models(toasty::models!(Session))
+        .models(toasty::models!(crate::*))
         .connect(&cfg.database_url)
         .await
         .map_err(|e| AppError::internal(format!("open db: {e}")))?;
-    db.push_schema()
-        .await
-        .map_err(|e| AppError::internal(format!("push schema: {e}")))?;
+    let _ = db.push_schema().await;
     Ok(db)
 }
 
 pub async fn build_app(cfg: &Config, db: Db) -> AppResult<Router> {
-    let sessions = auth::cookie_service(cfg, db);
+    let sessions = auth::cookie_service(cfg, db.clone());
+
+    let driver = sensors::probe(cfg.mock_hardware).await;
+    let (tx, _rx) = broadcast::channel::<Reading>(64);
+    sensors::spawn_poller(db.clone(), driver, tx.clone(), POLL_INTERVAL);
+
+    let readings_state = ReadingsState { db: db.clone(), tx };
 
     let mut app = Router::new()
-        .route("/health", get(health))
         .route("/api/ping", get(ping))
-        .route("/auth/me", get(auth::me));
+        .route("/auth/me", get(auth::me))
+        .merge(readings::routes(readings_state));
 
     if cfg.mock_auth {
         tracing::warn!("MOESTUIN_MOCK_AUTH enabled — /auth/dev-login is live, DO NOT use in prod");
-        app = app.merge(auth::dev_routes(cfg, sessions.clone()));
+        app = app.merge(auth::dev_routes(cfg, db.clone(), sessions.clone()));
     } else {
-        let oidc = auth::build_oidc(cfg, sessions.clone()).await?;
+        let oidc = auth::build_oidc(cfg, db, sessions.clone()).await?;
         app = app.with_oidc(oidc);
     }
 
@@ -46,10 +57,6 @@ pub async fn build_app(cfg: &Config, db: Db) -> AppResult<Router> {
         .layer(sessions)
         .layer(CompressionLayer::new().br(true).gzip(true))
         .layer(TraceLayer::new_for_http()))
-}
-
-async fn health() -> &'static str {
-    "ok"
 }
 
 async fn ping(session: CookieSession<User>) -> Json<serde_json::Value> {

@@ -21,13 +21,13 @@ Milestones are ordered so the site is usable end-to-end as early as possible, th
 - [ ] Persistent session store — currently `MemStore`; swap for a SQLite-backed store when we add migrations in M2.
 
 ## M2 — Sensors + live graph
-- [ ] Sensor daemon task (`tokio::spawn`) polls DHT22 + moisture every 30s, writes to `readings` table.
-- [ ] `SensorDriver` enum (`Real` / `Mock`); startup probes real hardware, auto-falls-back to `Mock` on failure or when `MOESTUIN_MOCK_HW=1`. Active variant surfaced on health endpoint.
-- [ ] `GET /api/readings?from=..&to=..` (paginated).
-- [ ] `GET /api/readings/stream` (SSE) — pushes new readings as they land.
-- [ ] Frontend: dashboard page with line graph (e.g. Chart.js or LayerCake) fed by TanStack Query, kept live via SSE. Spinner on first load.
-- [ ] Light/dark theme toggle wired to Skeleton themes, persisted in `localStorage`.
-- [ ] Playwright: mocked SSE updates the graph.
+- [x] Sensor daemon task (`tokio::spawn`) polls DHT22 + moisture every 30s, writes to `readings` table.
+- [x] `SensorDriver` enum (`Real` / `Mock`); startup probes real hardware, auto-falls-back to `Mock` on failure or when `MOESTUIN_MOCK_HW=1`. Active variant surfaced on health endpoint.
+- [x] `GET /api/readings?from=..&to=..` (paginated).
+- [x] `GET /api/readings/stream` (SSE) — pushes new readings as they land.
+- [x] Frontend: dashboard page with line graph (e.g. Chart.js or LayerCake) fed by TanStack Query, kept live via SSE. Spinner on first load.
+- [x] Light/dark theme toggle wired to Skeleton themes, persisted in `localStorage`.
+- [x] Playwright: mocked SSE updates the graph.
 
 ## M3 — Webcam
 - [ ] `moestuin-webcam` service: ffmpeg captures HLS (`.m3u8` + segments), rotates into `webcam/YYYY-MM-DD/`.

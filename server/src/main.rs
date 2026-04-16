@@ -1,15 +1,11 @@
 use std::{error::Error, net::SocketAddr};
 
 use server::{build_app, config::Config, open_db};
-use tracing_subscriber::{EnvFilter, fmt};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let _ = dotenvy::dotenv();
-
-    fmt()
-        .with_env_filter(EnvFilter::try_from_default_env().unwrap_or_else(|_| "info".into()))
-        .init();
+    tracing_subscriber::fmt().init();
 
     let cfg = Config::from_env()?;
     let db = open_db(&cfg).await?;

@@ -1,10 +1,11 @@
 import { defineConfig } from 'vitest/config';
 import { sveltekit } from '@sveltejs/kit/vite';
+import tailwindcss from '@tailwindcss/vite';
 
 const backend = process.env.MOESTUIN_BACKEND ?? 'http://localhost:8080';
 
 export default defineConfig({
-	plugins: [sveltekit()],
+	plugins: [tailwindcss(), sveltekit()],
 	server: {
 		proxy: {
 			'/api': { target: backend, changeOrigin: false },
