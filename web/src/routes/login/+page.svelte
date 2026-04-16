@@ -9,13 +9,6 @@
 
 	const err = $derived(page.url.searchParams.get('error'));
 	const errMsg = $derived(err ? (errorMessages[err] ?? 'Inloggen mislukt.') : null);
-
-	let devEmail = $state('');
-
-	function devLogin() {
-		const params = new URLSearchParams({ email: devEmail });
-		window.location.href = `/auth/dev-login?${params}`;
-	}
 </script>
 
 <svelte:head>
@@ -84,24 +77,24 @@
 					<p class="text-xs text-surface-400 text-center uppercase tracking-wider">
 						Ontwikkelomgeving
 					</p>
-					<div class="flex gap-2">
+					<!-- eslint-disable-next-line svelte/no-navigation-without-resolve -- backend route via Vite proxy -->
+					<form method="get" action="/auth/dev-login" class="flex gap-2">
 						<input
 							type="email"
+							name="email"
 							placeholder="e-mailadres"
-							bind:value={devEmail}
+							required
 							class="input flex-1 text-sm"
 							data-testid="dev-email"
 						/>
 						<button
-							type="button"
+							type="submit"
 							class="btn preset-tonal-surface text-sm px-3"
-							onclick={devLogin}
-							disabled={!devEmail}
 							data-testid="dev-login"
 						>
 							Inloggen
 						</button>
-					</div>
+					</form>
 				</div>
 			{/if}
 		</div>
