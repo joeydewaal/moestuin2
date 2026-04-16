@@ -21,6 +21,22 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 	return res.json() as Promise<T>;
 }
 
+export interface Reading {
+	id: string;
+	taken_at: string;
+	temp_c: number;
+	humidity: number;
+	moisture: number;
+}
+
 export const api = {
-	me: () => request<Me>('/auth/me')
+	me: () => request<Me>('/auth/me'),
+	readings: (params?: { from?: number; to?: number; limit?: number }) => {
+		const q = new URLSearchParams();
+		if (params?.from !== undefined) q.set('from', String(params.from));
+		if (params?.to !== undefined) q.set('to', String(params.to));
+		if (params?.limit !== undefined) q.set('limit', String(params.limit));
+		const qs = q.toString();
+		return request<Reading[]>(`/api/readings${qs ? `?${qs}` : ''}`);
+	}
 };

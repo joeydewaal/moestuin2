@@ -1,22 +1,31 @@
+use std::time::Duration;
+
 use axum::{Json, Router, routing::get};
 use axum_security::{cookie::CookieSession, oidc::OidcExt};
 use serde_json::json;
 use toasty::Db;
+use tokio::sync::broadcast;
 use tower_http::{compression::CompressionLayer, trace::TraceLayer};
 
 pub mod auth;
 pub mod config;
 pub mod error;
+pub mod readings;
+pub mod sensors;
 pub mod session_store;
 
 use auth::User;
 use config::Config;
 use error::{AppError, AppResult};
+use readings::{Reading, ReadingJson, ReadingsState};
+use sensors::DriverKind;
 use session_store::Session;
+
+pub const POLL_INTERVAL: Duration = Duration::from_secs(30);
 
 pub async fn open_db(cfg: &Config) -> AppResult<Db> {
     let db = Db::builder()
-        .models(toasty::models!(Session))
+        .models(toasty::models!(Session, Reading))
         .connect(&cfg.database_url)
         .await
         .map_err(|e| AppError::internal(format!("open db: {e}")))?;
@@ -26,13 +35,30 @@ pub async fn open_db(cfg: &Config) -> AppResult<Db> {
     Ok(db)
 }
 
+#[derive(Clone)]
+pub struct Health {
+    pub driver: DriverKind,
+}
+
 pub async fn build_app(cfg: &Config, db: Db) -> AppResult<Router> {
-    let sessions = auth::cookie_service(cfg, db);
+    let sessions = auth::cookie_service(cfg, db.clone());
+
+    let driver = sensors::probe(cfg.mock_hardware).await;
+    let driver_kind = driver.kind();
+    let (tx, _rx) = broadcast::channel::<ReadingJson>(64);
+    sensors::spawn_poller(db.clone(), driver, tx.clone(), POLL_INTERVAL);
+
+    let readings_state = ReadingsState { db, tx };
+    let health = Health {
+        driver: driver_kind,
+    };
 
     let mut app = Router::new()
-        .route("/health", get(health))
+        .route("/health", get(health_handler))
         .route("/api/ping", get(ping))
-        .route("/auth/me", get(auth::me));
+        .route("/auth/me", get(auth::me))
+        .with_state(health)
+        .merge(readings::routes(readings_state));
 
     if cfg.mock_auth {
         tracing::warn!("MOESTUIN_MOCK_AUTH enabled — /auth/dev-login is live, DO NOT use in prod");
@@ -48,8 +74,10 @@ pub async fn build_app(cfg: &Config, db: Db) -> AppResult<Router> {
         .layer(TraceLayer::new_for_http()))
 }
 
-async fn health() -> &'static str {
-    "ok"
+async fn health_handler(
+    axum::extract::State(h): axum::extract::State<Health>,
+) -> Json<serde_json::Value> {
+    Json(json!({ "status": "ok", "driver": h.driver }))
 }
 
 async fn ping(session: CookieSession<User>) -> Json<serde_json::Value> {

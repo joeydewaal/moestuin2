@@ -3015,14 +3015,17 @@ dependencies = [
  "axum",
  "axum-security",
  "dotenvy",
+ "futures-util",
  "insta",
  "jiff",
+ "rand 0.10.1",
  "reqwest",
  "serde",
  "serde_json",
  "thiserror 2.0.18",
  "toasty",
  "tokio",
+ "tokio-stream",
  "tower-http",
  "tracing",
  "tracing-subscriber",
@@ -3586,6 +3589,7 @@ dependencies = [
  "futures-core",
  "pin-project-lite",
  "tokio",
+ "tokio-util",
 ]
 
 [[package]]
