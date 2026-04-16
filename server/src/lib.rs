@@ -18,13 +18,12 @@ use auth::User;
 use config::Config;
 use error::{AppError, AppResult};
 use readings::{Reading, ReadingsState};
-use session_store::Session;
 
 pub const POLL_INTERVAL: Duration = Duration::from_secs(30);
 
 pub async fn open_db(cfg: &Config) -> AppResult<Db> {
     let db = Db::builder()
-        .models(toasty::models!(Session, Reading, User))
+        .models(toasty::models!(crate::*))
         .connect(&cfg.database_url)
         .await
         .map_err(|e| AppError::internal(format!("open db: {e}")))?;
