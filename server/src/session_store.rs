@@ -8,7 +8,7 @@ use crate::{
     error::{AppError, AppResult},
 };
 
-#[derive(Debug, toasty::Model)]
+#[derive(Debug, Clone, toasty::Model)]
 pub struct Session {
     #[key]
     pub id: String,

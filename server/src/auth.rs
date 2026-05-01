@@ -17,9 +17,13 @@ use serde::{Deserialize, Serialize};
 use toasty::Db;
 use uuid::Uuid;
 
-use crate::{config::Config, error::AppError, session_store::ToastySessionStore};
+use crate::{
+    config::Config,
+    error::AppError,
+    session_store::{Session, ToastySessionStore},
+};
 
-#[derive(Debug, Clone, toasty::Model, Serialize, Deserialize)]
+#[derive(Debug, Clone, toasty::Model)]
 pub struct User {
     #[key]
     #[auto]
@@ -30,6 +34,8 @@ pub struct User {
     pub name: Option<String>,
     #[default(Timestamp::now())]
     pub created_at: Timestamp,
+    #[has_many]
+    pub sessions: toasty::HasMany<Session>,
 }
 
 pub type Sessions = CookieContext<User>;
