@@ -23,7 +23,9 @@ use crate::{auth::User, error::AppResult};
 #[derive(Debug, Clone, toasty::Model, Serialize)]
 pub struct Reading {
     #[key]
+    #[auto]
     pub id: Uuid,
+    #[index]
     pub taken_at: Timestamp,
     pub temp_c: f64,
     pub humidity: f64,

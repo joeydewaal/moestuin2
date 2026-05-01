@@ -4,12 +4,8 @@ use jiff::Timestamp;
 use rand::{RngExt, rng};
 use toasty::Db;
 use tokio::sync::broadcast;
-use uuid::Uuid;
 
-use crate::{
-    error::{AppError, AppResult},
-    readings::Reading,
-};
+use crate::{error::AppResult, readings::Reading};
 
 #[derive(Debug, Clone, Copy, serde::Serialize)]
 #[serde(rename_all = "lowercase")]
@@ -90,27 +86,14 @@ async fn tick(
     tx: &broadcast::Sender<Reading>,
 ) -> AppResult<()> {
     let sample = driver.read().await?;
-    let taken_at = Timestamp::now();
-    let id = Uuid::now_v7();
-
     let mut db = db.clone();
-    let reading = Reading {
-        id,
-        taken_at,
-        temp_c: sample.temp_c,
-        humidity: sample.humidity,
-        moisture: sample.moisture,
-    };
-
-    Reading::create()
-        .id(id)
-        .taken_at(taken_at)
-        .temp_c(reading.temp_c)
-        .humidity(reading.humidity)
-        .moisture(reading.moisture)
+    let reading = Reading::create()
+        .taken_at(Timestamp::now())
+        .temp_c(sample.temp_c)
+        .humidity(sample.humidity)
+        .moisture(sample.moisture)
         .exec(&mut db)
-        .await
-        .map_err(AppError::from)?;
+        .await?;
     let _ = tx.send(reading);
     Ok(())
 }

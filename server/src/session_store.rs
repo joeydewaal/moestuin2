@@ -12,12 +12,11 @@ use crate::{
 pub struct Session {
     #[key]
     pub id: String,
-    pub session_created_at: i64,
-    pub user_id: String,
-    pub subject: String,
-    pub email: String,
-    pub name: Option<String>,
-    pub user_created_at: i64,
+    pub session_created_at: Timestamp,
+    #[index]
+    pub user_id: Uuid,
+    #[belongs_to(key = user_id, references = id)]
+    pub user: toasty::BelongsTo<User>,
 }
 
 #[derive(Clone)]
@@ -29,6 +28,11 @@ impl ToastySessionStore {
     pub fn new(db: Db) -> Self {
         Self { db }
     }
+}
+
+fn ts_from_secs(secs: u64) -> AppResult<Timestamp> {
+    Timestamp::from_second(secs as i64)
+        .map_err(|e| AppError::internal(format!("bad timestamp: {e}")))
 }
 
 impl CookieStore for ToastySessionStore {
@@ -43,12 +47,8 @@ impl CookieStore for ToastySessionStore {
 
         Session::create()
             .id(id)
-            .session_created_at(session.created_at as i64)
-            .user_id(session.state.id.to_string())
-            .subject(session.state.subject)
-            .email(session.state.email)
-            .name(session.state.name)
-            .user_created_at(session.state.created_at.as_second())
+            .session_created_at(ts_from_secs(session.created_at)?)
+            .user_id(session.state.id)
             .exec(&mut db)
             .await?;
 
@@ -58,24 +58,17 @@ impl CookieStore for ToastySessionStore {
     async fn load_session(&self, id: &SessionId) -> AppResult<Option<CookieSession<User>>> {
         let mut db = self.db.clone();
         let Some(row) = Session::filter_by_id(id.as_str().to_string())
+            .include(Session::fields().user())
             .first()
             .exec(&mut db)
             .await?
         else {
             return Ok(None);
         };
-        let user = User {
-            id: Uuid::parse_str(&row.user_id)
-                .map_err(|e| AppError::internal(format!("bad user_id: {e}")))?,
-            subject: row.subject,
-            email: row.email,
-            name: row.name,
-            created_at: Timestamp::from_second(row.user_created_at)
-                .map_err(|e| AppError::internal(format!("bad timestamp: {e}")))?,
-        };
+        let user = row.user.get().clone();
         Ok(Some(CookieSession::new(
             id.clone(),
-            row.session_created_at as u64,
+            row.session_created_at.as_second() as u64,
             user,
         )))
     }
@@ -94,7 +87,7 @@ impl CookieStore for ToastySessionStore {
 
     async fn remove_before(&self, deadline: u64) -> AppResult<()> {
         let mut db = self.db.clone();
-        let cutoff = deadline as i64;
+        let cutoff = ts_from_secs(deadline)?;
         toasty::query!(Session filter .session_created_at <= #cutoff)
             .delete()
             .exec(&mut db)
