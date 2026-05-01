@@ -28,6 +28,7 @@ pub struct User {
     pub subject: String,
     pub email: String,
     pub name: Option<String>,
+    #[default(Timestamp::now())]
     pub created_at: Timestamp,
 }
 
@@ -136,7 +137,6 @@ async fn upsert_user(
             .subject(subject)
             .email(email)
             .name(name)
-            .created_at(Timestamp::now())
             .exec(&mut db)
             .await?)
     }
