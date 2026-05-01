@@ -22,7 +22,9 @@ use crate::{config::Config, error::AppError, session_store::ToastySessionStore};
 #[derive(Debug, Clone, toasty::Model, Serialize, Deserialize)]
 pub struct User {
     #[key]
+    #[auto]
     pub id: Uuid,
+    #[unique]
     pub subject: String,
     pub email: String,
     pub name: Option<String>,
@@ -117,42 +119,26 @@ async fn upsert_user(
 ) -> Result<User, AppError> {
     let mut db = db.clone();
 
-    if let Some(existing) = User::all()
-        .filter(User::fields().subject().eq(&subject))
+    if let Some(mut existing) = User::filter_by_subject(&subject)
         .first()
         .exec(&mut db)
         .await?
     {
-        User::all()
-            .filter(User::fields().subject().eq(&subject))
+        existing
             .update()
-            .email(&email)
-            .name(name.clone())
+            .email(email)
+            .name(name)
             .exec(&mut db)
             .await?;
-
-        Ok(User {
-            email,
-            name,
-            ..existing
-        })
+        Ok(existing)
     } else {
-        let user = User {
-            id: Uuid::now_v7(),
-            subject,
-            email,
-            name,
-            created_at: Timestamp::now(),
-        };
-        User::create()
-            .id(user.id)
-            .subject(&user.subject)
-            .email(&user.email)
-            .name(user.name.clone())
-            .created_at(user.created_at)
+        Ok(User::create()
+            .subject(subject)
+            .email(email)
+            .name(name)
+            .created_at(Timestamp::now())
             .exec(&mut db)
-            .await?;
-        Ok(user)
+            .await?)
     }
 }
 
