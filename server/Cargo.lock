@@ -2763,7 +2763,7 @@ dependencies = [
  "security-framework",
  "security-framework-sys",
  "webpki-root-certs",
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
@@ -3379,13 +3379,14 @@ dependencies = [
 
 [[package]]
 name = "toasty"
-version = "0.4.0"
-source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
+version = "0.5.0"
+source = "git+https://github.com/tokio-rs/toasty.git#88a2a17f277f69914d591bb0acb999a717bd4fb9"
 dependencies = [
  "async-trait",
  "bit-set",
  "by_address",
  "deadpool",
+ "hashbrown 0.16.1",
  "index_vec",
  "indexmap 2.14.0",
  "inventory",
@@ -3406,11 +3407,12 @@ dependencies = [
 
 [[package]]
 name = "toasty-core"
-version = "0.4.0"
-source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
+version = "0.5.0"
+source = "git+https://github.com/tokio-rs/toasty.git#88a2a17f277f69914d591bb0acb999a717bd4fb9"
 dependencies = [
  "async-trait",
  "bit-set",
+ "hashbrown 0.16.1",
  "heck",
  "indexmap 2.14.0",
  "jiff",
@@ -3421,8 +3423,8 @@ dependencies = [
 
 [[package]]
 name = "toasty-driver-mysql"
-version = "0.4.0"
-source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
+version = "0.5.0"
+source = "git+https://github.com/tokio-rs/toasty.git#88a2a17f277f69914d591bb0acb999a717bd4fb9"
 dependencies = [
  "async-trait",
  "jiff",
@@ -3437,11 +3439,12 @@ dependencies = [
 
 [[package]]
 name = "toasty-driver-postgresql"
-version = "0.4.0"
-source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
+version = "0.5.0"
+source = "git+https://github.com/tokio-rs/toasty.git#88a2a17f277f69914d591bb0acb999a717bd4fb9"
 dependencies = [
  "async-trait",
  "const-oid 0.9.6",
+ "hashbrown 0.16.1",
  "jiff",
  "lru",
  "percent-encoding",
@@ -3464,8 +3467,8 @@ dependencies = [
 
 [[package]]
 name = "toasty-driver-sqlite"
-version = "0.4.0"
-source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
+version = "0.5.0"
+source = "git+https://github.com/tokio-rs/toasty.git#88a2a17f277f69914d591bb0acb999a717bd4fb9"
 dependencies = [
  "async-trait",
  "rusqlite",
@@ -3480,9 +3483,10 @@ dependencies = [
 
 [[package]]
 name = "toasty-macros"
-version = "0.4.0"
-source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
+version = "0.5.0"
+source = "git+https://github.com/tokio-rs/toasty.git#88a2a17f277f69914d591bb0acb999a717bd4fb9"
 dependencies = [
+ "hashbrown 0.16.1",
  "heck",
  "pluralizer",
  "proc-macro2",
@@ -3493,8 +3497,8 @@ dependencies = [
 
 [[package]]
 name = "toasty-sql"
-version = "0.4.0"
-source = "git+https://github.com/joeydewaal/toasty.git?branch=feat%2Ffloat#2e2bc5f6f1700e6877bb09c8a193f2fe9437a40d"
+version = "0.5.0"
+source = "git+https://github.com/tokio-rs/toasty.git#88a2a17f277f69914d591bb0acb999a717bd4fb9"
 dependencies = [
  "toasty-core",
 ]
@@ -4031,7 +4035,7 @@ version = "0.1.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c2a7b1c03c876122aa43f3020e6c3c3ee5c05081c9a00739faf7503aeba10d22"
 dependencies = [
- "windows-sys 0.52.0",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]

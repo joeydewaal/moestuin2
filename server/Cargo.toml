@@ -13,7 +13,7 @@ rand = "0.10.1"
 serde = { version = "1.0.228", features = ["derive"] }
 serde_json = "1.0.149"
 thiserror = "2.0.18"
-toasty = { git = "https://github.com/joeydewaal/toasty.git", branch = "feat/float", features = ["sqlite", "serde", "jiff"] }
+toasty = { git = "https://github.com/tokio-rs/toasty.git", features = ["sqlite", "serde", "jiff"] }
 tokio = { version = "1.52.0", features = ["full"] }
 tokio-stream = { version = "0.1.18", features = ["sync"] }
 tower-http = { version = "0.6.8", features = ["compression-br", "compression-gzip", "trace", "cors"] }

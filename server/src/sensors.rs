@@ -114,7 +114,3 @@ async fn tick(
     let _ = tx.send(reading);
     Ok(())
 }
-
-pub fn to_centi(v: f64) -> i64 {
-    (v * 100.0).round() as i64
-}
