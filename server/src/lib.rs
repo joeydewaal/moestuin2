@@ -5,7 +5,7 @@ use axum_security::{cookie::CookieSession, oidc::OidcExt};
 use serde_json::json;
 use toasty::Db;
 use tokio::sync::broadcast;
-use tower_http::{compression::CompressionLayer, trace::TraceLayer};
+use tower_http::{compression::CompressionLayer, services::ServeDir, trace::TraceLayer};
 
 pub mod auth;
 pub mod config;
@@ -13,11 +13,13 @@ pub mod error;
 pub mod readings;
 pub mod sensors;
 pub mod session_store;
+pub mod webcam;
 
 use auth::User;
 use config::Config;
 use error::{AppError, AppResult};
 use readings::{Reading, ReadingsState};
+use webcam::WebcamState;
 
 pub const POLL_INTERVAL: Duration = Duration::from_secs(30);
 
@@ -27,7 +29,9 @@ pub async fn open_db(cfg: &Config) -> AppResult<Db> {
         .connect(&cfg.database_url)
         .await
         .map_err(|e| AppError::internal(format!("open db: {e}")))?;
-    let _ = db.push_schema().await;
+    db.push_schema()
+        .await
+        .map_err(|e| AppError::internal(format!("push schema: {e}")))?;
     Ok(db)
 }
 
@@ -39,11 +43,16 @@ pub async fn build_app(cfg: &Config, db: Db) -> AppResult<Router> {
     sensors::spawn_poller(db.clone(), driver, tx.clone(), POLL_INTERVAL);
 
     let readings_state = ReadingsState { db: db.clone(), tx };
+    let webcam_state = WebcamState {
+        root: cfg.webcam_root.clone(),
+    };
 
     let mut app = Router::new()
         .route("/api/ping", get(ping))
         .route("/auth/me", get(auth::me))
-        .merge(readings::routes(readings_state));
+        .merge(readings::routes(readings_state))
+        .merge(webcam::routes(webcam_state))
+        .nest_service("/webcam", ServeDir::new(&cfg.webcam_root));
 
     if cfg.mock_auth {
         tracing::warn!("MOESTUIN_MOCK_AUTH enabled — /auth/dev-login is live, DO NOT use in prod");

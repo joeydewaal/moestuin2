@@ -1,0 +1,14 @@
+---
+source: tests/webcam.rs
+expression: body
+---
+[
+  {
+    "date": "2026-04-30",
+    "url": "/webcam/2026-04-30/day.mp4"
+  },
+  {
+    "date": "2026-04-29",
+    "url": "/webcam/2026-04-29/day.mp4"
+  }
+]

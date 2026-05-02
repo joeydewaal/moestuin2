@@ -29,6 +29,16 @@ export interface Reading {
 	moisture: number;
 }
 
+export interface WebcamLive {
+	url: string | null;
+	date: string | null;
+}
+
+export interface WebcamArchiveEntry {
+	date: string;
+	url: string;
+}
+
 export const api = {
 	me: () => request<Me>('/auth/me'),
 	readings: (params?: { from?: string; to?: string; limit?: number }) => {
@@ -38,5 +48,7 @@ export const api = {
 		if (params?.limit !== undefined) q.set('limit', String(params.limit));
 		const qs = q.toString();
 		return request<Reading[]>(`/api/readings${qs ? `?${qs}` : ''}`);
-	}
+	},
+	webcamLive: () => request<WebcamLive>('/api/webcam/live'),
+	webcamArchive: () => request<WebcamArchiveEntry[]>('/api/webcam/archive')
 };

@@ -39,7 +39,11 @@ services:
     volumes:
       - moestuin-data:/data
     environment:
+      # Local-time directory rollover (Brussels = Amsterdam, CET/CEST).
+      TZ: Europe/Brussels
       WEBCAM_ROOT: /data/webcam
+      # Pass MOESTUIN_MOCK_HW=1 to use a synthetic lavfi source instead of /dev/video0.
+      MOESTUIN_MOCK_HW: ${MOESTUIN_MOCK_HW:-0}
 
   caddy:
     image: caddy:2-alpine

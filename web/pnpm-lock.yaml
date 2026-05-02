@@ -20,6 +20,9 @@ importers:
       '@tanstack/svelte-query':
         specifier: ^6.1.16
         version: 6.1.16(svelte@5.55.4(@typescript-eslint/types@8.58.2))
+      hls.js:
+        specifier: ^1.6.16
+        version: 1.6.16
       layerchart:
         specifier: ^1.0.13
         version: 1.0.13(svelte@5.55.4(@typescript-eslint/types@8.58.2))(typescript@6.0.2)
@@ -2135,6 +2138,9 @@ packages:
   hasown@2.0.2:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
+
+  hls.js@1.6.16:
+    resolution: {integrity: sha512-VSIRpLfRwlAAdGL4wiTucx2ScRipo0ed1FBatWkyt832jC4CReKstga6yIhYVwGu9LOBjuX9wzmRMeQdBJtzEA==}
 
   iconv-lite@0.6.3:
     resolution: {integrity: sha512-4fCk79wshMdzMp2rH06qWrJE4iolqLhCUH+OiuIgU++RB0+94NlDL81atO7GX55uUKueo0txHNtvEyI6D7WdMw==}
@@ -5804,6 +5810,8 @@ snapshots:
   hasown@2.0.2:
     dependencies:
       function-bind: 1.1.2
+
+  hls.js@1.6.16: {}
 
   iconv-lite@0.6.3:
     dependencies:
