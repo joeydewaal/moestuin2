@@ -24,6 +24,7 @@ impl TestServer {
                 redirect_url: "http://localhost/auth/callback".into(),
                 post_logout_redirect_url: "/".into(),
             },
+            webcam_root: std::env::temp_dir(),
         };
 
         let db = open_db(&cfg).await.expect("open db");

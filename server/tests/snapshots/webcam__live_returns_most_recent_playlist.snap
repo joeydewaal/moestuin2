@@ -1,0 +1,8 @@
+---
+source: tests/webcam.rs
+expression: body
+---
+{
+  "date": "2026-05-01",
+  "url": "/webcam/2026-05-01/live.m3u8"
+}

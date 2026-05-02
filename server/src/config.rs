@@ -1,4 +1,4 @@
-use std::env;
+use std::{env, path::PathBuf};
 
 use crate::error::{AppError, AppResult};
 
@@ -12,6 +12,7 @@ pub struct Config {
     pub allowed_emails: Vec<String>,
     pub cookie_secret: Vec<u8>,
     pub oidc: OidcConfig,
+    pub webcam_root: PathBuf,
 }
 
 #[derive(Debug, Clone)]
@@ -60,6 +61,9 @@ impl Config {
                 post_logout_redirect_url: env::var("MOESTUIN_POST_LOGOUT_REDIRECT")
                     .unwrap_or_else(|_| "/".into()),
             },
+            webcam_root: env::var("MOESTUIN_WEBCAM_ROOT")
+                .map(PathBuf::from)
+                .unwrap_or_else(|_| PathBuf::from("/data/webcam")),
         })
     }
 }

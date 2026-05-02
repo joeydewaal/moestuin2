@@ -1,0 +1,8 @@
+---
+source: tests/webcam.rs
+expression: body
+---
+{
+  "date": null,
+  "url": null
+}

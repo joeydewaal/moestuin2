@@ -9,7 +9,10 @@ export default defineConfig({
 	server: {
 		proxy: {
 			'/api': { target: backend, changeOrigin: false },
-			'/auth': { target: backend, changeOrigin: false }
+			'/auth': { target: backend, changeOrigin: false },
+			// Only match the static-file subpaths (`/webcam/<date>/…`); the bare
+			// `/webcam` page route belongs to SvelteKit and must not be proxied.
+			'^/webcam/.+': { target: backend, changeOrigin: false }
 		}
 	},
 	test: {

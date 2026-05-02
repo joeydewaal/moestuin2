@@ -1,0 +1,7 @@
+---
+source: tests/webcam.rs
+expression: body
+---
+{
+  "url": "/webcam/2026-04-30/day.mp4"
+}

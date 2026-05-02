@@ -44,6 +44,7 @@
 		"@skeletonlabs/skeleton-svelte": "^4.15.2",
 		"@tailwindcss/vite": "^4.2.2",
 		"@tanstack/svelte-query": "^6.1.16",
+		"hls.js": "^1.6.16",
 		"layerchart": "^1.0.13",
 		"tailwindcss": "^4.2.2"
 	}
